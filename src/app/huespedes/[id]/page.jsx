@@ -136,6 +136,12 @@ export default function DetalleHuesped() {
         </Form.Group>
         <Button variant="primary" type="submit">
           Guardar cambios
+        </Button>{' '}
+        <Button
+          variant="success"
+          onClick={() => router.push(`/reservas/crear?huespedId=${huesped.id_huesped}`)}
+        >
+          Crear Reserva
         </Button>
       </Form>
     </Container>
