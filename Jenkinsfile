@@ -69,7 +69,7 @@ pipeline {
         success {
             echo "Despliegue completado con éxito"
             echo "Nueva imagen desplegada: ${DOCKER_IMAGE}:${DOCKER_TAG}"
-            echo "Frontend accesible en: http://5.189.171.241:84"
+            echo "Frontend accesible en: http://5.189.171.241:30300"
         }
         failure {
             echo "Error en el despliegue"
