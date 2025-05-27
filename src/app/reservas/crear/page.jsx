@@ -6,13 +6,14 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
 import { Form, Button, Alert, Container, Row, Col } from "react-bootstrap";
 
-export default function CrearReserva() {
+// Componente que maneja la lógica del formulario
+function CrearReservaForm() {
   // Hook para navegación programática
   const router = useRouter();
   // Hook para obtener parámetros de búsqueda en la URL
@@ -126,7 +127,6 @@ export default function CrearReserva() {
     }
   };
 
-  // Renderizar el formulario de creación de reserva
   return (
     <Container className="mt-5">
       <Row className="justify-content-md-center">
@@ -191,5 +191,14 @@ export default function CrearReserva() {
         </Col>
       </Row>
     </Container>
+  );
+}
+
+// Componente principal envuelto en Suspense
+export default function CrearReserva() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <CrearReservaForm />
+    </Suspense>
   );
 }

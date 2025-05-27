@@ -2,7 +2,6 @@
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
-  swcMinify: true,
   // Configuración para optimizar imágenes
   images: {
     domains: ['5.189.171.241'],
