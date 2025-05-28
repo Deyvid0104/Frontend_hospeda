@@ -1,4 +1,3 @@
-
 /**
  * Componente ListadoHuespedes
  * Muestra una tabla con el listado de huéspedes obtenidos desde el backend.
@@ -8,22 +7,18 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../../../context/AuthContext";
 import { obtenerHuespedes, eliminarHuesped } from "../services/huespedesService";
 import Carga from "../../../components/Cargando";
 import { Table, Button, Alert } from "react-bootstrap";
 
 export default function ListadoHuespedes() {
-  // Estado para lista de huéspedes
+  const { user } = useAuth();
   const [huespedes, setHuespedes] = useState([]);
-  // Estado para control de carga y mensajes
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
 
-  /**
-   * Carga los huéspedes desde el backend y actualiza el estado.
-   * Maneja errores y estado de carga.
-   */
   const cargarHuespedes = async () => {
     setError("");
     setMensaje("");
@@ -38,18 +33,15 @@ export default function ListadoHuespedes() {
     }
   };
 
-  // Carga los huéspedes al montar el componente
   useEffect(() => {
     cargarHuespedes();
   }, []);
 
-  /**
-   * Maneja la eliminación de un huésped.
-   * Solicita confirmación al usuario antes de eliminar.
-   * Actualiza el estado con mensajes de éxito o error.
-   * @param {number} id - ID del huésped a eliminar
-   */
   const manejarEliminar = async (id) => {
+    if (!user || (user.rol !== "admin")) {
+      setError("No tiene permisos para eliminar huéspedes");
+      return;
+    }
     if (!confirm("¿Está seguro de eliminar este huésped?")) return;
     try {
       await eliminarHuesped(id);
@@ -60,10 +52,8 @@ export default function ListadoHuespedes() {
     }
   };
 
-  // Mostrar indicador de carga mientras se obtienen datos
   if (cargando) return <Carga />;
 
-  // Renderizar tabla con listado de huéspedes y acciones
   return (
     <>
       {error && <Alert variant="danger">{error}</Alert>}
@@ -88,12 +78,28 @@ export default function ListadoHuespedes() {
               <td>{huesped.email}</td>
               <td>{huesped.telefono}</td>
               <td>
-                <Button variant="warning" size="sm" href={`/huespedes/${huesped.id_huesped}`}>
-                  Ver / Editar
+                <Button variant="info" size="sm" href={`/huespedes/${huesped.id_huesped}`}>
+                  Ver
                 </Button>{" "}
-                <Button variant="danger" size="sm" onClick={() => manejarEliminar(huesped.id_huesped)}>
-                  Eliminar
-                </Button>
+                {(user && (user.rol === "admin" || user.rol === "recepcionista")) && (
+                  <>
+                    <Button variant="warning" size="sm" href={`/huespedes/${huesped.id_huesped}?modo=editar`}>
+                      Editar
+                    </Button>{" "}
+                    <Button 
+                      variant="success" 
+                      size="sm" 
+                      href={`/reservas/crear?huespedId=${huesped.id_huesped}`}
+                    >
+                      Crear Reserva
+                    </Button>
+                  </>
+                )}{" "}
+                {user && user.rol === "admin" && (
+                  <Button variant="danger" size="sm" onClick={() => manejarEliminar(huesped.id_huesped)}>
+                    Eliminar
+                  </Button>
+                )}
               </td>
             </tr>
           ))}

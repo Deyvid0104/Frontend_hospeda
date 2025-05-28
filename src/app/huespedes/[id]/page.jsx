@@ -7,44 +7,41 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { obtenerHuespedPorId, actualizarHuesped } from "../../../modules/huespedes/services/huespedesService";
 import Cargando from "../../../components/Cargando";
 import { useAuth } from "../../../context/AuthContext";
 import { Form, Button, Alert, Container } from "react-bootstrap";
 
 export default function DetalleHuesped() {
-  // Obtener id del huésped desde parámetros de ruta
   const { id } = useParams();
-  // Hook para navegación programática
+  const searchParams = useSearchParams();
   const router = useRouter();
-  // Contexto de autenticación para obtener usuario y estado de carga
   const { user, loading } = useAuth();
 
-  // Estado para datos del huésped
   const [huesped, setHuesped] = useState(null);
-  // Estado para control de carga y mensajes
+  const [modo, setModo] = useState("ver");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
 
-  // Efecto para controlar acceso y cargar datos al montar o cambiar usuario
+  useEffect(() => {
+    const modoParam = searchParams.get("modo");
+    setModo(modoParam || "ver");
+  }, [searchParams]);
+
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        // Redirigir a login si no hay usuario
         router.push("/auth/login");
       } else if (user.rol !== "admin" && user.rol !== "recepcionista") {
-        // Redirigir a inicio si usuario no tiene permisos
         router.push("/");
       } else {
-        // Cargar datos del huésped
         cargarHuesped();
       }
     }
   }, [loading, user]);
 
-  // Función para cargar datos del huésped desde backend
   const cargarHuesped = async () => {
     setError("");
     setCargando(true);
@@ -58,13 +55,11 @@ export default function DetalleHuesped() {
     }
   };
 
-  // Manejar cambios en los campos del formulario
   const manejarCambio = (e) => {
     const { name, value } = e.target;
     setHuesped({ ...huesped, [name]: value });
   };
 
-  // Manejar envío del formulario para actualizar datos
   const manejarSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -72,25 +67,61 @@ export default function DetalleHuesped() {
     try {
       await actualizarHuesped(id, huesped);
       setMensaje("Huésped actualizado correctamente");
-      // Volver atrás después de 1.5 segundos
       setTimeout(() => {
-        router.back();
+        router.push("/huespedes");
       }, 1500);
     } catch (err) {
       setError("Error al actualizar el huésped");
     }
   };
 
-  // Mostrar cargando mientras se obtienen datos o estado de usuario
-  if (cargando || loading) return <Cargando />;
+  const cambiarModo = () => {
+    const nuevoModo = modo === "ver" ? "editar" : "ver";
+    if (nuevoModo === "ver") {
+      router.push(`/huespedes/${id}`);
+    } else {
+      router.push(`/huespedes/${id}?modo=editar`);
+    }
+  };
 
-  // Mostrar mensaje si no se encontró el huésped
+  const crearReserva = () => {
+    router.push(`/reservas/crear?huespedId=${id}`);
+  };
+
+  if (loading || !user || (user.rol !== "admin" && user.rol !== "recepcionista")) {
+    return null;
+  }
+
+  if (cargando) return <Cargando />;
   if (!huesped) return <p>No se encontró el huésped.</p>;
 
-  // Renderizar formulario con datos del huésped
   return (
     <Container className="mt-4">
-      <h1>Detalle de Huésped #{huesped.id}</h1>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1>Detalle de Huésped #{huesped.id}</h1>
+        <div>
+          <Button 
+            variant="success" 
+            onClick={crearReserva}
+            className="me-2"
+          >
+            Crear Reserva
+          </Button>
+          <Button 
+            variant={modo === "ver" ? "warning" : "info"} 
+            onClick={cambiarModo}
+            className="me-2"
+          >
+            {modo === "ver" ? "Editar" : "Ver"}
+          </Button>
+          <Button 
+            variant="secondary" 
+            onClick={() => router.push("/huespedes")}
+          >
+            Volver a Huéspedes
+          </Button>
+        </div>
+      </div>
       {error && <Alert variant="danger">{error}</Alert>}
       {mensaje && <Alert variant="success">{mensaje}</Alert>}
       <Form onSubmit={manejarSubmit}>
@@ -102,6 +133,7 @@ export default function DetalleHuesped() {
             value={huesped.nombre || ""}
             onChange={manejarCambio}
             required
+            disabled={modo === "ver"}
           />
         </Form.Group>
         <Form.Group className="mb-3" controlId="apellidos">
@@ -112,6 +144,7 @@ export default function DetalleHuesped() {
             value={huesped.apellidos || ""}
             onChange={manejarCambio}
             required
+            disabled={modo === "ver"}
           />
         </Form.Group>
         <Form.Group className="mb-3" controlId="email">
@@ -122,6 +155,7 @@ export default function DetalleHuesped() {
             value={huesped.email || ""}
             onChange={manejarCambio}
             required
+            disabled={modo === "ver"}
           />
         </Form.Group>
         <Form.Group className="mb-3" controlId="telefono">
@@ -132,17 +166,14 @@ export default function DetalleHuesped() {
             value={huesped.telefono || ""}
             onChange={manejarCambio}
             required
+            disabled={modo === "ver"}
           />
         </Form.Group>
-        <Button variant="primary" type="submit">
-          Guardar cambios
-        </Button>{' '}
-        <Button
-          variant="success"
-          onClick={() => router.push(`/reservas/crear?huespedId=${huesped.id_huesped}`)}
-        >
-          Crear Reserva
-        </Button>
+        {modo === "editar" && (
+          <Button variant="primary" type="submit">
+            Guardar cambios
+          </Button>
+        )}
       </Form>
     </Container>
   );

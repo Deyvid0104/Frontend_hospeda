@@ -49,9 +49,14 @@ export default function ListadoHabitaciones() {
    * Maneja la eliminación de una habitación.
    * Solicita confirmación al usuario antes de eliminar.
    * Actualiza el estado con mensajes de éxito o error.
+   * Solo disponible para admin.
    * @param {number} id - ID de la habitación a eliminar
    */
   const manejarEliminar = async (id) => {
+    if (!user || user.rol !== "admin") {
+      setError("No tiene permisos para eliminar habitaciones");
+      return;
+    }
     if (!confirm("¿Está seguro de eliminar esta habitación?")) return;
     try {
       await eliminarHabitacion(id);
@@ -92,13 +97,18 @@ export default function ListadoHabitaciones() {
               <td>{hab.estado}</td>
               <td>{hab.capacidad}</td>
               <td>
-                <Button variant="warning" size="sm" href={`/habitaciones/${hab.id_habitacion}`}>
-                  Ver / Editar
+                <Button variant="info" size="sm" href={`/habitaciones/${hab.id_habitacion}`}>
+                  Ver
                 </Button>{" "}
-                {(user && user.rol === "admin") && (
-                  <Button variant="danger" size="sm" onClick={() => manejarEliminar(hab.id_habitacion)}>
-                    Eliminar
-                  </Button>
+                {user && user.rol === "admin" && (
+                  <>
+                    <Button variant="warning" size="sm" href={`/habitaciones/${hab.id_habitacion}?modo=editar`}>
+                      Editar
+                    </Button>{" "}
+                    <Button variant="danger" size="sm" onClick={() => manejarEliminar(hab.id_habitacion)}>
+                      Eliminar
+                    </Button>
+                  </>
                 )}
               </td>
             </tr>

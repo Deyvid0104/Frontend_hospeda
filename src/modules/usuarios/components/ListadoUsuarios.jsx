@@ -79,8 +79,11 @@ export default function ListadoUsuarios() {
               <td>{usuario.nombre_usuario}</td>
               <td>{usuario.rol}</td>
               <td>
-                <Button variant="warning" size="sm" href={`/usuarios/${usuario.id_usuario}`}>
-                  Ver / Editar
+                <Button variant="info" size="sm" href={`/usuarios/${usuario.id_usuario}`}>
+                  Ver
+                </Button>{" "}
+                <Button variant="warning" size="sm" href={`/usuarios/${usuario.id_usuario}?modo=editar`}>
+                  Editar
                 </Button>{" "}
                 <Button variant="danger" size="sm" onClick={() => manejarEliminar(usuario.id_usuario)}>
                   Eliminar

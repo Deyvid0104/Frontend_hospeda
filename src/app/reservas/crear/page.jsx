@@ -19,7 +19,7 @@ function CrearReservaForm() {
   // Hook para obtener parámetros de búsqueda en la URL
   const searchParams = useSearchParams();
   // Contexto de autenticación para obtener usuario actual
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   // Estados para los campos del formulario
   const [fechaInicio, setFechaInicio] = useState("");
@@ -35,32 +35,33 @@ function CrearReservaForm() {
 
   // Efecto para controlar acceso según rol de usuario
   useEffect(() => {
-    if (!user || (user.rol !== "admin" && user.rol !== "recepcionista")) {
-      router.push("/auth/login");
-    }
-  }, [user, router]);
-
-  // Efecto para obtener huespedId de la URL y cargar habitaciones disponibles
-  useEffect(() => {
-    // Obtener parámetro huespedId de la URL
-    const huespedIdParam = searchParams.get("huespedId");
-    if (huespedIdParam) {
-      setIdHuesped(huespedIdParam);
-    }
-    
-    // Función para cargar habitaciones disponibles desde el backend
-    const cargarHabitaciones = async () => {
-      try {
-        const res = await api.get("/habitacion");
-        // Filtrar solo habitaciones con estado 'libre'
-        const habitacionesLibres = res.data.filter(h => h.estado === 'libre');
-        setHabitacionesDisponibles(habitacionesLibres);
-      } catch (err) {
-        setError("Error al cargar las habitaciones disponibles");
+    if (!loading) {
+      if (!user || (user.rol !== "admin" && user.rol !== "recepcionista")) {
+        router.push("/auth/login");
+        return;
       }
-    };
-    cargarHabitaciones();
-  }, [searchParams]);
+      
+      // Cargar datos iniciales solo si el usuario está autenticado
+      const huespedIdParam = searchParams.get("huespedId");
+      if (huespedIdParam) {
+        setIdHuesped(huespedIdParam);
+      }
+      
+      cargarHabitaciones();
+    }
+  }, [loading, user, router, searchParams]);
+
+  // Función para cargar habitaciones disponibles desde el backend
+  const cargarHabitaciones = async () => {
+    try {
+      const res = await api.get("/habitacion");
+      // Filtrar solo habitaciones con estado 'libre'
+      const habitacionesLibres = res.data.filter(h => h.estado === 'libre');
+      setHabitacionesDisponibles(habitacionesLibres);
+    } catch (err) {
+      setError("Error al cargar las habitaciones disponibles");
+    }
+  };
 
   // Función para validar que la fecha fin sea posterior a la fecha inicio y que la fecha inicio no sea anterior a hoy
   const validarFechas = () => {
@@ -115,7 +116,7 @@ function CrearReservaForm() {
       };
 
       // Enviar petición POST para crear la reserva
-      const res = await api.post("/reserva", data);
+      await api.post("/reserva", data);
       setExito("Reserva creada exitosamente");
       setTimeout(() => {
         router.back();
@@ -126,6 +127,9 @@ function CrearReservaForm() {
       setCargando(false);
     }
   };
+
+  if (loading) return <div>Cargando...</div>;
+  if (!user || (user.rol !== "admin" && user.rol !== "recepcionista")) return null;
 
   return (
     <Container className="mt-5">
