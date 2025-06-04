@@ -7,7 +7,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams, notFound } from "next/navigation";
 import { obtenerHabitacionPorId, actualizarHabitacion } from "../../../modules/habitaciones/services/habitacionesService";
 import Cargando from "../../../components/Cargando";
 import { useAuth } from "../../../context/AuthContext";
@@ -24,6 +24,7 @@ export default function DetalleHabitacion() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [precioBaseValido, setPrecioBaseValido] = useState(true);
 
   useEffect(() => {
     const modoParam = searchParams.get("modo");
@@ -57,11 +58,25 @@ export default function DetalleHabitacion() {
 
   const manejarCambio = (e) => {
     const { name, value } = e.target;
-    setHabitacion({ ...habitacion, [name]: value });
+    if (name === "precio_base") {
+      const valorNumerico = parseFloat(value);
+      if (isNaN(valorNumerico) || valorNumerico < 0.01) {
+        setPrecioBaseValido(false);
+      } else {
+        setPrecioBaseValido(true);
+      }
+      setHabitacion({ ...habitacion, [name]: value });
+    } else {
+      setHabitacion({ ...habitacion, [name]: value });
+    }
   };
 
   const manejarSubmit = async (e) => {
     e.preventDefault();
+    if (!precioBaseValido) {
+      setError("El precio base debe ser un valor positivo mayor o igual a 0.01");
+      return;
+    }
     setError("");
     setMensaje("");
     try {
@@ -89,7 +104,7 @@ export default function DetalleHabitacion() {
   }
 
   if (cargando) return <Cargando />;
-  if (!habitacion) return <p>No se encontró la habitación.</p>;
+  if (!habitacion) return notFound();
 
   return (
     <Container className="mt-4">
@@ -127,14 +142,18 @@ export default function DetalleHabitacion() {
         </Form.Group>
         <Form.Group className="mb-3" controlId="tipo">
           <Form.Label>Tipo</Form.Label>
-          <Form.Control
-            type="text"
+          <Form.Select
             name="tipo"
             value={habitacion.tipo || ""}
             onChange={manejarCambio}
             required
             disabled={modo === "ver" || (user.rol === "recepcionista")}
-          />
+          >
+            <option value="individual">Individual</option>
+            <option value="doble">Doble</option>
+            <option value="triple">Triple</option>
+            <option value="dormitorio">Dormitorio</option>
+          </Form.Select>
         </Form.Group>
         <Form.Group className="mb-3" controlId="precio_base">
           <Form.Label>Precio Base</Form.Label>
@@ -143,6 +162,8 @@ export default function DetalleHabitacion() {
             name="precio_base"
             value={habitacion.precio_base || ""}
             onChange={manejarCambio}
+            min="0.01"
+            step="0.01"
             required
             disabled={modo === "ver" || (user.rol === "recepcionista")}
           />
@@ -157,22 +178,26 @@ export default function DetalleHabitacion() {
             disabled={modo === "ver" || (user.rol === "recepcionista")}
           >
             <option value="">Seleccione un estado</option>
-            <option value="disponible">Disponible</option>
-            <option value="ocupado">Ocupado</option>
-            <option value="mantenimiento">Mantenimiento</option>
-            <option value="reservado">Reservado</option>
+            <option value="libre">libre</option>
+            <option value="ocupado">ocupado</option>
+            <option value="mantenimiento">mantenimiento</option>
+            <option value="reservado">reservado</option>
           </Form.Select>
         </Form.Group>
         <Form.Group className="mb-3" controlId="capacidad">
           <Form.Label>Capacidad</Form.Label>
-          <Form.Control
-            type="number"
+          <Form.Select
             name="capacidad"
             value={habitacion.capacidad || ""}
             onChange={manejarCambio}
             required
             disabled={modo === "ver" || (user.rol === "recepcionista")}
-          />
+          >
+            <option value="1">1 huésped</option>
+            <option value="2">2 huéspedes</option>
+            <option value="3">3 huéspedes</option>
+            <option value="4">4 huéspedes</option>
+          </Form.Select>
         </Form.Group>
         <Form.Group className="mb-3" controlId="foto">
           <Form.Label>Foto (URL)</Form.Label>

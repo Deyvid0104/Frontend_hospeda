@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams, notFound } from "next/navigation";
 import { obtenerUsuarioPorId, actualizarUsuario } from "../../../modules/usuarios/services/usuariosService";
-import Carga from "../../../components/Cargando";
+import Cargando from "../../../components/Cargando";
 import { useAuth } from "../../../context/AuthContext";
 import { Form, Button, Alert, Container } from "react-bootstrap";
 
@@ -80,21 +80,15 @@ export default function DetalleUsuario() {
     return null;
   }
 
-  if (cargando) return <Carga />;
-  if (!usuario) return <p>No se encontró el usuario.</p>;
+  if (cargando) return <Cargando />;
+  if (!usuario) return notFound();
 
   return (
     <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1>Detalle de Usuario #{usuario.id}</h1>
         <div>
-          <Button 
-            variant="success"
-            onClick={() => router.push(`/reservas/crear?huespedId=${usuario.id}`)}
-            className="me-2"
-          >
-            Crear Reserva
-          </Button>
+          {/* Botón "Crear Reserva" eliminado según indicación */}
           <Button 
             variant={modo === "ver" ? "warning" : "info"} 
             onClick={cambiarModo}

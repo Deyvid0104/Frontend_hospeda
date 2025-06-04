@@ -33,6 +33,7 @@ function CrearReservaForm() {
   // Estado para controlar el estado de carga del formulario
   const [cargando, setCargando] = useState(false);
 
+
   // Efecto para controlar acceso según rol de usuario
   useEffect(() => {
     if (!loading) {
@@ -49,15 +50,19 @@ function CrearReservaForm() {
       
       cargarHabitaciones();
     }
-  }, [loading, user, router, searchParams]);
+  }, [loading, user, router, searchParams, fechaInicio, fechaFin]);
 
   // Función para cargar habitaciones disponibles desde el backend
   const cargarHabitaciones = async () => {
     try {
-      const res = await api.get("/habitacion");
-      // Filtrar solo habitaciones con estado 'libre'
-      const habitacionesLibres = res.data.filter(h => h.estado === 'libre');
-      setHabitacionesDisponibles(habitacionesLibres);
+      if (!fechaInicio || !fechaFin) {
+        setHabitacionesDisponibles([]);
+        return;
+      }
+      // Importar la función obtenerHabitacionesDisponibles del servicio
+      const { obtenerHabitacionesDisponibles } = await import("../../../modules/habitaciones/services/habitacionesService");
+      const res = await obtenerHabitacionesDisponibles(fechaInicio, fechaFin);
+      setHabitacionesDisponibles(res.data);
     } catch (err) {
       setError("Error al cargar las habitaciones disponibles");
     }
@@ -107,7 +112,7 @@ function CrearReservaForm() {
         fecha_entrada: fechaInicio,
         fecha_salida: fechaFin,
         estado: 'confirmada',
-        id_huesped: Number(idHuesped),
+        huespedId: Number(idHuesped),
         detalles_reserva: [{
           id_habitacion: Number(idHabitacion),
           noches: noches,
@@ -141,7 +146,7 @@ function CrearReservaForm() {
           <Form onSubmit={manejarSubmit}>
             <Form.Group className="mb-3" controlId="formFechaInicio">
               <Form.Label>Fecha de Inicio</Form.Label>
-              <Form.Control
+            <Form.Control
                 type="date"
                 value={fechaInicio}
                 onChange={(e) => setFechaInicio(e.target.value)}
@@ -152,7 +157,7 @@ function CrearReservaForm() {
 
             <Form.Group className="mb-3" controlId="formFechaFin">
               <Form.Label>Fecha de Fin</Form.Label>
-              <Form.Control
+            <Form.Control
                 type="date"
                 value={fechaFin}
                 onChange={(e) => setFechaFin(e.target.value)}

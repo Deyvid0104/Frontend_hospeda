@@ -7,8 +7,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams, notFound } from "next/navigation";
 import { obtenerReservaPorId, actualizarReserva } from "../../../modules/reservas/services/reservasService";
+import { obtenerHabitaciones } from "../../../modules/habitaciones/services/habitacionesService";
+import { obtenerHuespedes } from "../../../modules/huespedes/services/huespedesService";
 import Cargando from "../../../components/Cargando";
 import { useAuth } from "../../../context/AuthContext";
 import { Form, Button, Alert, Container } from "react-bootstrap";
@@ -24,11 +26,36 @@ export default function DetalleReserva() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [habitaciones, setHabitaciones] = useState([]);
+  const [huespedes, setHuespedes] = useState([]);
 
   useEffect(() => {
     const modoParam = searchParams.get("modo");
     setModo(modoParam || "ver");
   }, [searchParams]);
+
+  useEffect(() => {
+    const cargarHabitaciones = async () => {
+      try {
+        const res = await obtenerHabitaciones();
+        setHabitaciones(res.data);
+      } catch (err) {
+        // Manejar error si es necesario
+      }
+    };
+
+    const cargarHuespedes = async () => {
+      try {
+        const res = await obtenerHuespedes();
+        setHuespedes(res.data);
+      } catch (err) {
+        // Manejar error si es necesario
+      }
+    };
+
+    cargarHabitaciones();
+    cargarHuespedes();
+  }, []);
 
   useEffect(() => {
     if (!loading) {
@@ -47,7 +74,15 @@ export default function DetalleReserva() {
     setCargando(true);
     try {
       const res = await obtenerReservaPorId(id);
-      setReserva(res.data);
+      // Inicializar id_huesped e id_habitacion para modo editar
+      const reservaData = res.data;
+      if (reservaData) {
+        reservaData.id_huesped = reservaData.huesped ? reservaData.huesped.id_huesped : null;
+        reservaData.id_habitacion = (reservaData.detalles_reserva && reservaData.detalles_reserva.length > 0 && reservaData.detalles_reserva[0].habitacion)
+          ? reservaData.detalles_reserva[0].habitacion.id_habitacion
+          : null;
+      }
+      setReserva(reservaData);
     } catch (err) {
       setError("Error al cargar la reserva");
     } finally {
@@ -57,7 +92,13 @@ export default function DetalleReserva() {
 
   const manejarCambio = (e) => {
     const { name, value } = e.target;
-    setReserva({ ...reserva, [name]: value });
+    if (name === "id_habitacion") {
+      setReserva({ ...reserva, id_habitacion: Number(value) });
+    } else if (name === "id_huesped") {
+      setReserva({ ...reserva, id_huesped: Number(value) });
+    } else {
+      setReserva({ ...reserva, [name]: value });
+    }
   };
 
   const manejarSubmit = async (e) => {
@@ -65,7 +106,21 @@ export default function DetalleReserva() {
     setError("");
     setMensaje("");
     try {
-      await actualizarReserva(id, reserva);
+      // Construir objeto con estructura esperada por backend
+      const reservaActualizar = {
+        fecha_entrada: new Date(reserva.fecha_entrada),
+        fecha_salida: new Date(reserva.fecha_salida),
+        estado: reserva.estado || 'confirmada',
+        huespedId: Number(reserva.id_huesped),
+        detalles_reserva: [
+          {
+            id_habitacion: Number(reserva.id_habitacion),
+            noches: reserva.detalles_reserva && reserva.detalles_reserva.length > 0 ? reserva.detalles_reserva[0].noches : 1,
+            precio_aplicado: reserva.detalles_reserva && reserva.detalles_reserva.length > 0 ? reserva.detalles_reserva[0].precio_aplicado : 0,
+          }
+        ]
+      };
+      await actualizarReserva(id, reservaActualizar);
       setMensaje("Reserva actualizada correctamente");
       setTimeout(() => {
         router.push("/reservas");
@@ -89,7 +144,7 @@ export default function DetalleReserva() {
   }
 
   if (cargando) return <Cargando />;
-  if (!reserva) return <p>No se encontró la reserva.</p>;
+  if (!reserva) return notFound();
 
   return (
     <Container className="mt-4">
@@ -114,49 +169,78 @@ export default function DetalleReserva() {
       {error && <Alert variant="danger">{error}</Alert>}
       {mensaje && <Alert variant="success">{mensaje}</Alert>}
       <Form onSubmit={manejarSubmit}>
-        <Form.Group className="mb-3" controlId="fecha_inicio">
-          <Form.Label>Fecha inicio</Form.Label>
+        <Form.Group className="mb-3" controlId="fecha_entrada">
+          <Form.Label>Fecha entrada</Form.Label>
           <Form.Control
             type="date"
-            name="fecha_inicio"
-            value={reserva.fecha_inicio || ""}
+            name="fecha_entrada"
+            value={reserva.fecha_entrada ? new Date(reserva.fecha_entrada).toISOString().split("T")[0] : ""}
             onChange={manejarCambio}
             required
             disabled={modo === "ver"}
+            min={new Date().toISOString().split("T")[0]}
           />
         </Form.Group>
-        <Form.Group className="mb-3" controlId="fecha_fin">
-          <Form.Label>Fecha fin</Form.Label>
+        <Form.Group className="mb-3" controlId="fecha_salida">
+          <Form.Label>Fecha salida</Form.Label>
           <Form.Control
             type="date"
-            name="fecha_fin"
-            value={reserva.fecha_fin || ""}
+            name="fecha_salida"
+            value={reserva.fecha_salida ? new Date(reserva.fecha_salida).toISOString().split("T")[0] : ""}
             onChange={manejarCambio}
             required
             disabled={modo === "ver"}
+            min={new Date().toISOString().split("T")[0]}
           />
         </Form.Group>
         <Form.Group className="mb-3" controlId="id_huesped">
-          <Form.Label>ID Huésped</Form.Label>
-          <Form.Control
-            type="number"
-            name="id_huesped"
-            value={reserva.id_huesped || ""}
-            onChange={manejarCambio}
-            required
-            disabled={modo === "ver"}
-          />
+          <Form.Label>Huésped</Form.Label>
+          {modo === "ver" ? (
+            <Form.Control
+              type="text"
+              value={reserva.huesped ? reserva.huesped.nombre : ""}
+              disabled
+            />
+          ) : (
+            <Form.Control
+              type="text"
+              value={
+                huespedes.find(h => h.id_huesped === reserva.id_huesped)
+                  ? `${huespedes.find(h => h.id_huesped === reserva.id_huesped).nombre} ${huespedes.find(h => h.id_huesped === reserva.id_huesped).apellidos}`
+                  : ""
+              }
+              disabled
+            />
+          )}
         </Form.Group>
         <Form.Group className="mb-3" controlId="id_habitacion">
-          <Form.Label>ID Habitación</Form.Label>
-          <Form.Control
-            type="number"
-            name="id_habitacion"
-            value={reserva.id_habitacion || ""}
-            onChange={manejarCambio}
-            required
-            disabled={modo === "ver"}
-          />
+          <Form.Label>Nº Habitación</Form.Label>
+          {modo === "ver" ? (
+            <Form.Control
+              type="text"
+              disabled
+              value={
+                reserva.detalles_reserva && reserva.detalles_reserva.length > 0 && reserva.detalles_reserva[0].habitacion && reserva.detalles_reserva[0].habitacion.numero
+                  ? reserva.detalles_reserva[0].habitacion.numero
+                  : reserva.id_habitacion || ""
+              }
+            />
+          ) : (
+            <Form.Select
+              name="id_habitacion"
+              value={reserva.id_habitacion || ""}
+              onChange={manejarCambio}
+              required
+              disabled={false}
+            >
+              <option value="">Seleccione una habitación</option>
+              {habitaciones.map((habitacion) => (
+                <option key={habitacion.id_habitacion} value={habitacion.id_habitacion}>
+                  Habitación {habitacion.numero} - {habitacion.tipo} - {habitacion.precio_base}€
+                </option>
+              ))}
+            </Form.Select>
+          )}
         </Form.Group>
         {modo === "editar" && (
           <Button variant="primary" type="submit">

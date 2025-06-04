@@ -1,16 +1,16 @@
-// Componente reutilizable para mostrar estado de carga (loading)
-
 "use client";
 
 import React from "react";
-import { Spinner } from "react-bootstrap";
+import styles from "./Cargando.module.css";
 
-export default function Carga() {
+export default function Cargando() {
   return (
-    <div className="d-flex justify-content-center align-items-center" style={{ height: "100%" }}>
-      <Spinner animation="border" role="status" variant="primary" >
-        <span className="visually-hidden">Cargando...</span>
-      </Spinner>
+    <div className={styles.container}>
+      <img
+        src="/Cargando.gif"
+        alt="Cargando..."
+        className={styles.image}
+      />
     </div>
   );
 }

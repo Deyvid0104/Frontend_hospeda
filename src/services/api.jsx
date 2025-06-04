@@ -3,8 +3,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  // const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://5.189.171.241:30400";
-  baseURL: "http://5.189.171.241:30400",
+  // baseURL: "http://5.189.171.241:30400",   
+  baseURL: "http://localhost:4000",
+
 });
 
 // Interceptor para añadir el token JWT en las cabeceras de las peticiones

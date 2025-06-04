@@ -2,23 +2,27 @@
 
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
 import { Navbar, Nav, Container, NavDropdown } from "react-bootstrap";
 
 export default function BarraNavegacion() {
   const { user, logout } = useAuth();
+  const [expanded, setExpanded] = useState(false);
+
+  const handleToggle = () => setExpanded(!expanded);
+  const handleClose = () => setExpanded(false);
 
   return (
-    <Navbar bg="light" expand="lg" className="mb-3">
+    <Navbar bg="light" expand="lg" className="mb-3" expanded={expanded} onToggle={handleToggle}>
       <Container>
-        <Navbar.Brand as={Link} href="/">
+        <Navbar.Brand as={Link} href="/" onClick={handleClose}>
           Hospeda+
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
+          <Nav className="me-auto" onClick={handleClose}>
             {user && (
               <>
                 <Nav.Link as={Link} href="/habitaciones">
@@ -41,7 +45,7 @@ export default function BarraNavegacion() {
               </>
             )}
           </Nav>
-          <Nav>
+          <Nav onClick={handleClose}>
             {user ? (
               <NavDropdown title={user.nombre_usuario || user.email || "Usuario"} id="user-nav-dropdown" align="end">
                 <NavDropdown.Item as={Link} href={`/usuarios/${user.sub}`}>

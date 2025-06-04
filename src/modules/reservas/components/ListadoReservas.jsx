@@ -9,49 +9,64 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { obtenerReservas, eliminarReserva } from "../services/reservasService";
-import { obtenerDetallesPorReserva } from "../services/detallesReservaService";
 import Carga from "../../../components/Cargando";
-import { Table, Button, Alert, Badge } from "react-bootstrap";
+import { Table, Button, Alert, Badge, Form, Row, Col } from "react-bootstrap";
+import { useRouter } from "next/navigation";
 
 export default function ListadoReservas() {
+  const router = useRouter();
   const { user } = useAuth();
   const [reservas, setReservas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [filtros, setFiltros] = useState({
+    fecha_entrada: "",
+    fecha_salida: "",
+    nombre_huesped: "",
+  });
+
+  // Debounce para el filtro de nombre
+  const [nombreBusqueda, setNombreBusqueda] = useState("");
+  const [debouncedNombre, setDebouncedNombre] = useState(nombreBusqueda);
+
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedNombre(nombreBusqueda);
+    }, 500); // 500ms debounce
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [nombreBusqueda]);
+
+  // El filtro de nombre solo se actualiza al presionar Enter, no con debounce automático
+  // Por lo tanto, eliminamos el efecto que actualiza filtros con debounce
+  // React.useEffect(() => {
+  //   setFiltros((prev) => ({ ...prev, nombre_huesped: debouncedNombre }));
+  // }, [debouncedNombre]);
 
   const cargarDatos = async () => {
     setError("");
     setMensaje("");
     setCargando(true);
     try {
-      // Obtener las reservas
-      const resReservas = await obtenerReservas();
+      // Para evitar recarga en cada tecla, se usa debounce en nombreBusqueda y se pasa a filtros
+      // Pero el input de texto estaba usando filtros.nombre_huesped directamente, lo corregimos
+      const resReservas = await obtenerReservas(filtros);
       const reservasData = resReservas.data;
-      
-      // Para cada reserva, obtener sus detalles
-      const errores = [];
-      const reservasConDetalles = await Promise.all(
-        reservasData.map(async (reserva) => {
-          try {
-            const resDetalles = await obtenerDetallesPorReserva(reserva.id_reserva);
-            return {
-              ...reserva,
-              detalles_reserva: resDetalles.data || []
-            };
-          } catch (err) {
-            console.error(`Error al obtener detalles para reserva ${reserva.id_reserva}:`, err);
-            errores.push(`Error al cargar detalles de la reserva ${reserva.id_reserva}`);
-            return {
-              ...reserva,
-              detalles_reserva: []
-            };
-          }
-        })
-      );
 
-      // Ordenar reservas por fecha de entrada (más recientes primero)
-      const reservasOrdenadas = reservasConDetalles.sort((a, b) => 
+      console.log("Datos de reservas recibidos:", reservasData);
+
+      const reservasValidas = reservasData.filter(reserva => {
+        const valido = Number.isInteger(reserva.id_reserva) && reserva.id_reserva > 0;
+        if (!valido) {
+          console.warn(`ID de reserva inválido filtrado: ${reserva.id_reserva}`, reserva);
+        }
+        return valido;
+      });
+
+      const reservasOrdenadas = reservasValidas.sort((a, b) => 
         new Date(b.fecha_entrada) - new Date(a.fecha_entrada)
       );
 
@@ -59,11 +74,6 @@ export default function ListadoReservas() {
         setError("No hay reservas para mostrar");
       } else {
         setReservas(reservasOrdenadas);
-        // Si hay errores pero se pudieron cargar algunas reservas, mostrar una advertencia
-        if (errores.length > 0) {
-          setError("Se han cargado las reservas, pero algunas habitaciones no están disponibles temporalmente.");
-          console.warn("Detalles de los errores:", errores);
-        }
       }
     } catch (err) {
       console.error("Error al cargar datos:", err);
@@ -73,9 +83,9 @@ export default function ListadoReservas() {
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     cargarDatos();
-  }, []);
+  }, [filtros]);
 
   const manejarEliminar = async (id) => {
     if (!user || (user.rol !== "admin" && user.rol !== "recepcionista")) {
@@ -106,14 +116,17 @@ export default function ListadoReservas() {
       return "Sin asignar";
     }
     
-    // Mostrar habitacion.numero si existe, sino id_habitacion
+    // Mostrar habitacion.numero si existe, sino id_habitacion con prefijo #
     const habitaciones = detalles
       .map(d => {
         if (d.habitacion && d.habitacion.numero) {
           return d.habitacion.numero;
         }
         if (d.id_habitacion) {
-          return `#${d.id_habitacion}`;
+          return `ID Habitación: ${d.id_habitacion}`;
+        }
+        if (d.habitacion && d.habitacion.id_habitacion) {
+          return `ID Habitación: ${d.habitacion.id_habitacion}`;
         }
         return null;
       })
@@ -126,6 +139,63 @@ export default function ListadoReservas() {
 
   return (
     <>
+      <Form className="mb-3">
+        <Row>
+          <Col md={3}>
+            <Form.Group controlId="fechaEntrada">
+              <Form.Label>Fecha Entrada</Form.Label>
+              <Form.Control
+                type="date"
+                value={filtros.fecha_entrada}
+                onChange={(e) => setFiltros({ ...filtros, fecha_entrada: e.target.value })}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={3}>
+            <Form.Group controlId="fechaSalida">
+              <Form.Label>Fecha Salida</Form.Label>
+              <Form.Control
+                type="date"
+                value={filtros.fecha_salida}
+                onChange={(e) => setFiltros({ ...filtros, fecha_salida: e.target.value })}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group controlId="nombreHuesped">
+              <Form.Label>Nombre Huésped</Form.Label>
+              <div className="d-flex">
+                <Form.Control
+                  type="text"
+                  placeholder="Buscar por nombre o apellidos"
+                  value={nombreBusqueda}
+                  onChange={(e) => setNombreBusqueda(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      setFiltros((prev) => ({ ...prev, nombre_huesped: nombreBusqueda }));
+                    }
+                  }}
+                />
+                <Button
+                  variant="secondary"
+                  className="ms-2"
+                  onClick={() => {
+                    setNombreBusqueda("");
+                    setFiltros({
+                      fecha_entrada: "",
+                      fecha_salida: "",
+                      nombre_huesped: "",
+                    });
+                  }}
+                >
+                  Limpiar
+                </Button>
+              </div>
+            </Form.Group>
+          </Col>
+        </Row>
+      </Form>
       {error && <Alert variant="danger">{error}</Alert>}
       {mensaje && <Alert variant="success">{mensaje}</Alert>}
       <Table striped bordered hover responsive>
@@ -135,8 +205,8 @@ export default function ListadoReservas() {
             <th>Fecha entrada</th>
             <th>Fecha salida</th>
             <th>Estado</th>
-            <th>ID Huésped</th>
-            <th>Habitación(es)</th>
+            <th>Nombre Huésped</th>
+            <th>Habitación</th>
             <th>Duración</th>
             <th>Acciones</th>
           </tr>
@@ -157,16 +227,16 @@ export default function ListadoReservas() {
                     {reserva.estado || 'N/A'}
                   </Badge>
                 </td>
-                <td>{reserva.id_huesped}</td>
+                <td>{reserva.huesped?.nombre ?? ''} {reserva.huesped?.apellidos ?? ''}</td>
                 <td>{mostrarHabitaciones(reserva.detalles_reserva)}</td>
                 <td>{duracion} {duracion === 1 ? 'día' : 'días'}</td>
                 <td>
-                  <Button variant="info" size="sm" href={`/reservas/${reserva.id_reserva}`}>
+                  <Button variant="info" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}`)}>
                     Ver
                   </Button>{" "}
                   {user && (user.rol === "admin" || user.rol === "recepcionista") && (
                     <>
-                      <Button variant="warning" size="sm" href={`/reservas/${reserva.id_reserva}?modo=editar`}>
+                      <Button variant="warning" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}?modo=editar`)}>
                         Editar
                       </Button>{" "}
                       <Button variant="danger" size="sm" onClick={() => manejarEliminar(reserva.id_reserva)}>

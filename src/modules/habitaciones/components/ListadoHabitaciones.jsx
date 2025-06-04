@@ -9,10 +9,10 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { obtenerHabitaciones, eliminarHabitacion } from "../services/habitacionesService";
-import Carga from "../../../components/Cargando";
+import Cargando from "../../../components/Cargando";
 import { Table, Button, Alert } from "react-bootstrap";
 
-export default function ListadoHabitaciones() {
+export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
   // Obtener usuario actual para control de acceso
   const { user } = useAuth();
   // Estado para lista de habitaciones
@@ -31,8 +31,28 @@ export default function ListadoHabitaciones() {
     setMensaje("");
     setCargando(true);
     try {
-      const res = await obtenerHabitaciones();
-      setHabitaciones(res.data);
+      // Importar función para obtener habitaciones disponibles
+      const { obtenerHabitacionesDisponibles, obtenerHabitaciones } = await import("../services/habitacionesService");
+      const resHabitaciones = await obtenerHabitaciones();
+      const habitacionesData = resHabitaciones.data;
+
+      // Usar fechas recibidas por props o fecha actual si no hay
+      const fechaInicioConsulta = fechaInicio || new Date().toISOString().split('T')[0];
+      const fechaFinConsulta = fechaFin || fechaInicioConsulta;
+
+      // Consultar habitaciones disponibles para el rango de fechas
+      const resDisponibles = await obtenerHabitacionesDisponibles(fechaInicioConsulta, fechaFinConsulta);
+      const habitacionesDisponiblesIds = new Set(resDisponibles.data.map(h => h.id_habitacion));
+
+      // Actualizar estado de cada habitación según disponibilidad
+      const habitacionesConEstado = habitacionesData.map(hab => {
+        return {
+          ...hab,
+          estado: habitacionesDisponiblesIds.has(hab.id_habitacion) ? 'libre' : 'ocupada'
+        };
+      });
+
+      setHabitaciones(habitacionesConEstado);
     } catch (err) {
       setError("Error al cargar las habitaciones");
     } finally {
@@ -40,10 +60,10 @@ export default function ListadoHabitaciones() {
     }
   };
 
-  // Carga las habitaciones al montar el componente
-  useEffect(() => {
+  // Carga las habitaciones al montar el componente o cuando cambian las fechas
+  React.useEffect(() => {
     cargarHabitaciones();
-  }, []);
+  }, [fechaInicio, fechaFin]);
 
   /**
    * Maneja la eliminación de una habitación.
@@ -68,7 +88,8 @@ export default function ListadoHabitaciones() {
   };
 
   // Mostrar indicador de carga mientras se obtienen datos
-  if (cargando) return <Carga />;
+  if (cargando) return <Cargando />;
+
 
   // Renderizar tabla con listado de habitaciones y acciones
   return (

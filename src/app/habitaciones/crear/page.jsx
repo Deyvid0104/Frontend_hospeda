@@ -14,7 +14,7 @@ export default function CrearHabitacion() {
   const [tipo, setTipo] = useState("individual");
   const [precioBase, setPrecioBase] = useState("");
   const [estado, setEstado] = useState("libre");
-  const [capacidad, setCapacidad] = useState("");
+  const [capacidad, setCapacidad] = useState("1");
   const [foto, setFoto] = useState("");
   const [error, setError] = useState("");
   const [exito, setExito] = useState("");
@@ -47,7 +47,7 @@ export default function CrearHabitacion() {
       setTipo("individual");
       setPrecioBase("");
       setEstado("libre");
-      setCapacidad("");
+      setCapacidad("1");
       setFoto("");
       setTimeout(() => {
         router.back();
@@ -56,6 +56,13 @@ export default function CrearHabitacion() {
       setError("Error al crear la habitación. Verifique los datos.");
     } finally {
       setCargando(false);
+    }
+  };
+
+  const manejarPrecioBaseChange = (e) => {
+    const valor = e.target.value;
+    if (valor === "" || parseFloat(valor) >= 0) {
+      setPrecioBase(valor);
     }
   };
 
@@ -80,10 +87,10 @@ export default function CrearHabitacion() {
             <Form.Group className="mb-3" controlId="formTipo">
               <Form.Label>Tipo</Form.Label>
               <Form.Select value={tipo} onChange={(e) => setTipo(e.target.value)} required>
-                <option value="individual">Individual</option>
-                <option value="doble">Doble</option>
-                <option value="triple">Triple</option>
-                <option value="dormitorio">Dormitorio</option>
+                <option value="individual">individual</option>
+                <option value="doble">doble</option>
+                <option value="triple">triple</option>
+                <option value="dormitorio">dormitorio</option>
               </Form.Select>
             </Form.Group>
 
@@ -93,7 +100,7 @@ export default function CrearHabitacion() {
                 type="number"
                 step="0.01"
                 value={precioBase}
-                onChange={(e) => setPrecioBase(e.target.value)}
+                onChange={manejarPrecioBaseChange}
                 required
               />
             </Form.Group>
@@ -101,21 +108,21 @@ export default function CrearHabitacion() {
             <Form.Group className="mb-3" controlId="formEstado">
               <Form.Label>Estado</Form.Label>
               <Form.Select value={estado} onChange={(e) => setEstado(e.target.value)} required>
-                <option value="libre">Libre</option>
-                <option value="ocupada">Ocupada</option>
-                <option value="limpieza">Limpieza</option>
-                <option value="mantenimiento">Mantenimiento</option>
+                <option value="libre">libre</option>
+                <option value="ocupado">ocupado</option>
+                <option value="mantenimiento">mantenimiento</option>
+                <option value="reservado">reservado</option>
               </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formCapacidad">
               <Form.Label>Capacidad</Form.Label>
-              <Form.Control
-                type="number"
-                value={capacidad}
-                onChange={(e) => setCapacidad(e.target.value)}
-                required
-              />
+              <Form.Select value={capacidad} onChange={(e) => setCapacidad(e.target.value)} required>
+                <option value="1">1 huésped</option>
+                <option value="2">2 huéspedes</option>
+                <option value="3">3 huéspedes</option>
+                <option value="4">4 huéspedes</option>
+              </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formFoto">

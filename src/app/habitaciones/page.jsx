@@ -7,11 +7,11 @@
 // "use client" habilita el modo cliente para este componente
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import ListadoHabitaciones from "../../modules/habitaciones/components/ListadoHabitaciones";
 import { useAuth } from "../../context/AuthContext";
-import { Button } from "react-bootstrap";
+import { Button, Form, Row, Col } from "react-bootstrap";
 
 export default function PaginaHabitaciones() {
   // Hook para navegación programática
@@ -19,9 +19,27 @@ export default function PaginaHabitaciones() {
   // Contexto de autenticación para obtener usuario actual
   const { user } = useAuth();
 
+  // Estados para filtro de fechas
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+
   // Función para navegar a la página de creación de habitación
   const handleCrearClick = () => {
     router.push("/habitaciones/crear");
+  };
+
+  // Función para limpiar el filtro
+  const limpiarFiltro = () => {
+    setFechaInicio("");
+    setFechaFin("");
+  };
+
+  // Asegurar que fechaFin sea igual a fechaInicio si está vacía o es menor
+  const handleFechaInicioChange = (value) => {
+    setFechaInicio(value);
+    if (!fechaFin || value > fechaFin) {
+      setFechaFin(value);
+    }
   };
 
   return (
@@ -33,8 +51,42 @@ export default function PaginaHabitaciones() {
           Crear Habitación
         </Button>
       )}
-      {/* Componente que muestra el listado de habitaciones */}
-      <ListadoHabitaciones />
+
+      {/* Filtros de fecha para disponibilidad */}
+      <Form className="mb-3">
+        <Row className="align-items-end g-3">
+          <Col md={4}>
+            <Form.Group controlId="fechaInicio">
+              <Form.Label>Fecha Inicio</Form.Label>
+              <Form.Control
+                type="date"
+                value={fechaInicio}
+                onChange={(e) => handleFechaInicioChange(e.target.value)}
+                max={fechaFin || undefined}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group controlId="fechaFin">
+              <Form.Label>Fecha Fin</Form.Label>
+              <Form.Control
+                type="date"
+                value={fechaFin}
+                onChange={(e) => setFechaFin(e.target.value)}
+                min={fechaInicio || undefined}
+              />
+            </Form.Group>
+          </Col>
+          <Col md="auto">
+            <Button variant="secondary" onClick={limpiarFiltro}>
+              Limpiar
+            </Button>
+          </Col>
+        </Row>
+      </Form>
+
+      {/* Componente que muestra el listado de habitaciones con filtro de fechas */}
+      <ListadoHabitaciones fechaInicio={fechaInicio} fechaFin={fechaFin} />
     </div>
   );
 }
