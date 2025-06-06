@@ -12,7 +12,6 @@ export default function DetalleUsuario() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading } = useAuth();
-
   const [usuario, setUsuario] = useState(null);
   const [modo, setModo] = useState("ver");
   const [cargando, setCargando] = useState(true);
@@ -26,7 +25,7 @@ export default function DetalleUsuario() {
 
   useEffect(() => {
     if (!loading) {
-      if (!user || user.rol !== "admin") {
+      if (!user || (user.rol !== "admin" && String(user.sub) !== String(id))) {
         router.push("/");
       } else {
         cargarUsuario();
@@ -76,7 +75,7 @@ export default function DetalleUsuario() {
     }
   };
 
-  if (loading || !user || user.rol !== "admin") {
+  if (loading || !user || (user.rol !== "admin" && String(user.sub) !== String(id))) {
     return null;
   }
 
@@ -86,7 +85,7 @@ export default function DetalleUsuario() {
   return (
     <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Detalle de Usuario #{usuario.id}</h1>
+        <h1>Detalle de Usuario # {usuario.id_usuario} ({usuario.nombre_usuario} - {usuario.rol})</h1>
         <div>
           {/* Botón "Crear Reserva" eliminado según indicación */}
           <Button 
@@ -125,7 +124,7 @@ export default function DetalleUsuario() {
             value={usuario.rol || ""}
             onChange={manejarCambio}
             required
-            disabled={modo === "ver"}
+            disabled={modo === "ver" || (modo === "editar" && user.rol !== "admin")}
           >
             <option value="">Seleccione un rol</option>
             <option value="admin">Admin</option>

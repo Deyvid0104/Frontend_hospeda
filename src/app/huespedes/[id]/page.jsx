@@ -98,21 +98,21 @@ export default function DetalleHuesped() {
   return (
     <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Detalle de Huésped #{huesped.id}</h1>
+        <h1>Detalle de Huésped # {huesped.id_huesped}</h1>
         <div>
-          <Button 
-            variant="success" 
-            onClick={crearReserva}
-            className="me-2"
-          >
-            Crear Reserva
-          </Button>
           <Button 
             variant={modo === "ver" ? "warning" : "info"} 
             onClick={cambiarModo}
             className="me-2"
           >
             {modo === "ver" ? "Editar" : "Ver"}
+          </Button>
+          <Button 
+            variant="success" 
+            onClick={crearReserva}
+            className="me-2"
+          >
+            Crear Reserva
           </Button>
           <Button 
             variant="secondary" 
@@ -164,6 +164,17 @@ export default function DetalleHuesped() {
             type="text"
             name="telefono"
             value={huesped.telefono || ""}
+            onChange={manejarCambio}
+            required
+            disabled={modo === "ver"}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3" controlId="documento_identidad">
+          <Form.Label>Documento de Identidad</Form.Label>
+          <Form.Control
+            type="text"
+            name="documento_identidad"
+            value={huesped.documento_identidad || ""}
             onChange={manejarCambio}
             required
             disabled={modo === "ver"}

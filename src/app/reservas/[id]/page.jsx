@@ -149,7 +149,7 @@ export default function DetalleReserva() {
   return (
     <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Detalle de Reserva #{reserva.id}</h1>
+        <h1>Detalle de Reserva # {reserva.id_reserva}</h1>
         <div>
           <Button 
             variant={modo === "ver" ? "warning" : "info"} 
@@ -158,6 +158,28 @@ export default function DetalleReserva() {
           >
             {modo === "ver" ? "Editar" : "Ver"}
           </Button>
+          {user && (user.rol === "admin" || user.rol === "recepcionista") && modo === "ver" && (
+            <Button
+              variant="success"
+              className="me-2"
+              onClick={() => {
+                const fechaSalida = reserva.fecha_salida ? new Date(reserva.fecha_salida).toISOString().split('T')[0] : '';
+                const detalles = reserva.detalles_reserva || [];
+                const fechaEntrada = reserva.fecha_entrada ? new Date(reserva.fecha_entrada) : new Date();
+                const fechaFin = reserva.fecha_salida ? new Date(reserva.fecha_salida) : new Date();
+                const diasEstancia = Math.ceil((fechaFin - fechaEntrada) / (1000 * 60 * 60 * 24));
+                let monto = 0;
+                detalles.forEach(detalle => {
+                  const precio = detalle.precio_aplicado || 0;
+                  const noches = detalle.noches || diasEstancia;
+                  monto += precio * noches;
+                });
+                router.push(`/facturas/crear?fecha=${fechaSalida}&id_reserva=${reserva.id_reserva}&monto=${monto}`);
+              }}
+            >
+              Facturar
+            </Button>
+          )}
           <Button 
             variant="secondary" 
             onClick={() => router.push("/reservas")}

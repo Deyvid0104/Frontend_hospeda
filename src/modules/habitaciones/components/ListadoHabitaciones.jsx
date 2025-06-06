@@ -96,46 +96,123 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
     <>
       {error && <Alert variant="danger">{error}</Alert>}
       {mensaje && <Alert variant="success">{mensaje}</Alert>}
-      <Table striped bordered hover responsive>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Número</th>
-            <th>Tipo</th>
-            <th>Precio Base</th>
-            <th>Estado</th>
-            <th>Capacidad</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {habitaciones.map((hab) => (
-            <tr key={hab.id_habitacion}>
-              <td>{hab.id_habitacion}</td>
-              <td>{hab.numero}</td>
-              <td>{hab.tipo}</td>
-              <td>€{hab.precio_base}</td>
-              <td>{hab.estado}</td>
-              <td>{hab.capacidad}</td>
-              <td>
-                <Button variant="info" size="sm" href={`/habitaciones/${hab.id_habitacion}`}>
+      {/* Vista de tabla para pantallas grandes */}
+      <div className="d-none d-lg-block">
+        <Table striped bordered hover responsive>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Número</th>
+              <th>Tipo</th>
+              <th>Precio Base</th>
+              <th>Estado</th>
+              <th>Capacidad</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {habitaciones.map((hab) => (
+              <tr key={hab.id_habitacion}>
+                <td>{hab.id_habitacion}</td>
+                <td>{hab.numero}</td>
+                <td>{hab.tipo}</td>
+                <td>€{hab.precio_base}</td>
+                <td>
+                  <span className={`badge bg-${hab.estado === 'libre' ? 'success' : 'danger'}`}>
+                    {hab.estado}
+                  </span>
+                </td>
+                <td>{hab.capacidad}</td>
+                <td>
+                  <Button variant="info" size="sm" href={`/habitaciones/${hab.id_habitacion}`}>
+                    Ver
+                  </Button>{" "}
+                  {user && user.rol === "admin" && (
+                    <>
+                      <Button variant="warning" size="sm" href={`/habitaciones/${hab.id_habitacion}?modo=editar`}>
+                        Editar
+                      </Button>{" "}
+                      <Button variant="danger" size="sm" onClick={() => manejarEliminar(hab.id_habitacion)}>
+                        Eliminar
+                      </Button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
+
+      {/* Vista de tarjetas para móviles */}
+      <div className="d-lg-none">
+        {habitaciones.map((hab) => (
+          <div key={hab.id_habitacion} className="card mb-3 shadow-sm">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-start mb-3">
+                <h6 className="card-title mb-0 fw-bold text-primary">
+                  Habitación {hab.numero}
+                </h6>
+                <div className="d-flex align-items-center gap-2">
+                  <span className={`badge bg-${hab.estado === 'libre' ? 'success' : 'danger'}`}>
+                    {hab.estado}
+                  </span>
+                  <small className="text-muted">#{hab.id_habitacion}</small>
+                </div>
+              </div>
+
+              <div className="row g-2 mb-3">
+                <div className="col-6">
+                  <small className="text-muted d-block">Tipo</small>
+                  <div className="fw-semibold">{hab.tipo}</div>
+                </div>
+                <div className="col-6">
+                  <small className="text-muted d-block">Capacidad</small>
+                  <div className="fw-semibold">{hab.capacidad} personas</div>
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <small className="text-muted d-block">Precio Base</small>
+                <div className="fw-bold text-success fs-5">€{hab.precio_base}</div>
+              </div>
+
+              <div className="d-flex flex-wrap gap-2">
+                <Button 
+                  variant="info" 
+                  size="sm" 
+                  className="flex-fill"
+                  href={`/habitaciones/${hab.id_habitacion}`}
+                >
                   Ver
-                </Button>{" "}
+                </Button>
+                
                 {user && user.rol === "admin" && (
                   <>
-                    <Button variant="warning" size="sm" href={`/habitaciones/${hab.id_habitacion}?modo=editar`}>
+                    <Button 
+                      variant="warning" 
+                      size="sm" 
+                      className="flex-fill"
+                      href={`/habitaciones/${hab.id_habitacion}?modo=editar`}
+                    >
                       Editar
-                    </Button>{" "}
-                    <Button variant="danger" size="sm" onClick={() => manejarEliminar(hab.id_habitacion)}>
+                    </Button>
+                    
+                    <Button 
+                      variant="danger" 
+                      size="sm" 
+                      className="w-100 mt-2"
+                      onClick={() => manejarEliminar(hab.id_habitacion)}
+                    >
                       Eliminar
                     </Button>
                   </>
                 )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </>
   );
 }

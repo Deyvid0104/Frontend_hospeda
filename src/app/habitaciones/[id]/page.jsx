@@ -109,7 +109,7 @@ export default function DetalleHabitacion() {
   return (
     <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Detalle de Habitación #{habitacion.id}</h1>
+        <h1>Detalle de Habitación # {habitacion.numero}</h1>
         <div>
           <Button 
             variant={modo === "ver" ? "warning" : "info"} 

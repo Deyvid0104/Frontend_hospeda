@@ -3,8 +3,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  // baseURL: "http://5.189.171.241:30400",   
-  baseURL: "http://localhost:4000",
+  baseURL: "http://5.189.171.241:30400",   
+  // baseURL: "http://localhost:4000",
 
 });
 
@@ -12,7 +12,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -40,7 +40,7 @@ api.interceptors.response.use(
         console.error('Error de autenticación:', data);
         if (typeof window !== "undefined") {
           localStorage.removeItem("token");
-          window.location.href = "/login";
+          window.location.href = "/auth/login";
         }
         return Promise.reject(new Error('Sesión expirada. Por favor, inicie sesión nuevamente.'));
       case 403:

@@ -77,7 +77,10 @@ export default function PaginaHabitaciones() {
               />
             </Form.Group>
           </Col>
-          <Col md="auto">
+          <Col md="auto" className="d-flex gap-2">
+            <Button variant="primary" onClick={() => cargarHabitaciones()}>
+              Filtrar
+            </Button>
             <Button variant="secondary" onClick={limpiarFiltro}>
               Limpiar
             </Button>

@@ -2,7 +2,12 @@
 
 import api from "../../../services/api";
 
-export const obtenerFacturas = () => api.get("/factura");
+export const obtenerFacturas = (estado = "", metodo_pago = "") => {
+  const params = {};
+  if (estado) params.estado = estado;
+  if (metodo_pago) params.metodo_pago = metodo_pago;
+  return api.get("/factura", { params });
+};
 
 export const obtenerFacturaPorId = (id) => api.get(`/factura/${id}`);
 

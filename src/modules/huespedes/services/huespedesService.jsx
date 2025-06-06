@@ -2,7 +2,15 @@
 
 import api from "../../../services/api";
 
-export const obtenerHuespedes = () => api.get("/huesped");
+export const obtenerHuespedes = (filtros = {}) => {
+  const params = new URLSearchParams();
+
+  if (filtros.nombre) params.append("nombre", filtros.nombre);
+  if (filtros.email) params.append("email", filtros.email);
+  if (filtros.telefono) params.append("telefono", filtros.telefono);
+
+  return api.get("/huesped", { params });
+};
 
 export const obtenerHuespedPorId = (id) => api.get(`/huesped/${id}`);
 

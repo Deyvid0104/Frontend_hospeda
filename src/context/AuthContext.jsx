@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
 
   // Load user from localStorage token on mount
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (token) {
       try {
         const decoded = decodeToken(token);
@@ -21,17 +21,17 @@ export const AuthProvider = ({ children }) => {
         if (decoded.exp * 1000 > Date.now()) {
           setUser({ ...decoded, token });
         } else {
-          localStorage.removeItem("token");
+          sessionStorage.removeItem("token");
         }
       } catch (error) {
-        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
       }
     }
     setLoading(false);
   }, []);
 
   const login = (token) => {
-    localStorage.setItem("token", token);
+    sessionStorage.setItem("token", token);
     const decoded = decodeToken(token);
     setUser({ ...decoded, token });
     // Redirect based on role
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
     setUser(null);
     router.push("/auth/login");
   };

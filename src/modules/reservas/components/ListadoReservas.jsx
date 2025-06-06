@@ -139,7 +139,12 @@ export default function ListadoReservas() {
 
   return (
     <>
-      <Form className="mb-3">
+      <Form className="mb-3" onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          setFiltros((prev) => ({ ...prev, nombre_huesped: nombreBusqueda }));
+        }
+      }}>
         <Row>
           <Col md={3}>
             <Form.Group controlId="fechaEntrada">
@@ -177,15 +182,16 @@ export default function ListadoReservas() {
                     }
                   }}
                 />
+                <Button variant="primary" className="ms-2" onClick={() => {
+                    setFiltros((prev) => ({ ...prev, nombre_huesped: nombreBusqueda }));
+                  }}
+                >
+                  Filtrar
+                </Button>
                 <Button
-                  variant="secondary"
-                  className="ms-2"
-                  onClick={() => {
-                    setNombreBusqueda("");
-                    setFiltros({
-                      fecha_entrada: "",
-                      fecha_salida: "",
-                      nombre_huesped: "",
+                  variant="secondary" className="ms-2" onClick={() => {
+                    setNombreBusqueda(""); setFiltros({
+                      fecha_entrada: "", fecha_salida: "", nombre_huesped: "",
                     });
                   }}
                 >
@@ -198,58 +204,200 @@ export default function ListadoReservas() {
       </Form>
       {error && <Alert variant="danger">{error}</Alert>}
       {mensaje && <Alert variant="success">{mensaje}</Alert>}
-      <Table striped bordered hover responsive>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Fecha entrada</th>
-            <th>Fecha salida</th>
-            <th>Estado</th>
-            <th>Nombre Huésped</th>
-            <th>Habitación</th>
-            <th>Duración</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reservas.map((reserva) => {
-            const fechaEntrada = new Date(reserva.fecha_entrada);
-            const fechaSalida = new Date(reserva.fecha_salida);
-            const duracion = Math.ceil((fechaSalida - fechaEntrada) / (1000 * 60 * 60 * 24));
-            
-            return (
-              <tr key={reserva.id_reserva}>
-                <td>{reserva.id_reserva}</td>
-                <td>{fechaEntrada.toLocaleDateString()}</td>
-                <td>{fechaSalida.toLocaleDateString()}</td>
-                <td>
-                  <Badge bg={obtenerColorEstado(reserva.estado)}>
+      {/* Vista de tabla para pantallas grandes */}
+      <div className="d-none d-lg-block">
+        <Table striped bordered hover responsive>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha entrada</th>
+              <th>Fecha salida</th>
+              <th>Estado</th>
+              <th>Nombre Huésped</th>
+              <th>Habitación</th>
+              <th>Duración</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {reservas.map((reserva) => {
+              const fechaEntrada = new Date(reserva.fecha_entrada);
+              const fechaSalida = new Date(reserva.fecha_salida);
+              const duracion = Math.ceil((fechaSalida - fechaEntrada) / (1000 * 60 * 60 * 24));
+              
+              return (
+                <tr key={reserva.id_reserva}>
+                  <td>{reserva.id_reserva}</td>
+                  <td>{fechaEntrada.toLocaleDateString()}</td>
+                  <td>{fechaSalida.toLocaleDateString()}</td>
+                  <td>
+                    <Badge bg={obtenerColorEstado(reserva.estado)}>
+                      {reserva.estado || 'N/A'}
+                    </Badge>
+                  </td>
+                  <td>{reserva.huesped?.nombre ?? ''} {reserva.huesped?.apellidos ?? ''}</td>
+                  <td>{mostrarHabitaciones(reserva.detalles_reserva)}</td>
+                  <td>{duracion} {duracion === 1 ? 'día' : 'días'}</td>
+                  <td>
+                    <Button variant="info" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}`)}>
+                      Ver
+                    </Button>{" "}
+                    {user && (user.rol === "admin" || user.rol === "recepcionista") && (
+                      <>
+                    <Button variant="warning" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}?modo=editar`)}>
+                      Editar
+                    </Button>{" "}
+                    <Button variant="success" size="sm" onClick={() => {
+                      const fechaSalida = new Date(reserva.fecha_salida).toISOString().split('T')[0];
+                      const fechaEntrada = new Date(reserva.fecha_entrada);
+                      const fechaFin = new Date(reserva.fecha_salida);
+                      const diasEstancia = Math.ceil((fechaFin - fechaEntrada) / (1000 * 60 * 60 * 24));
+                      let monto = 0;
+                      if (reserva.detalles_reserva && reserva.detalles_reserva.length > 0) {
+                        reserva.detalles_reserva.forEach(detalle => {
+                          const precio = detalle.precio_aplicado || 0;
+                          const noches = detalle.noches || diasEstancia;
+                          monto += precio * noches;
+                        });
+                      }
+                      router.push(`/facturas/crear?fecha=${fechaSalida}&id_reserva=${reserva.id_reserva}&monto=${monto}`);
+                    }}>
+                      Facturar
+                    </Button>{" "}
+                    <Button variant="danger" size="sm" onClick={() => manejarEliminar(reserva.id_reserva)}>
+                      Eliminar
+                    </Button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+      </div>
+
+      {/* Vista de tarjetas para móviles */}
+      <div className="d-lg-none">
+        {reservas.map((reserva) => {
+          const fechaEntrada = new Date(reserva.fecha_entrada);
+          const fechaSalida = new Date(reserva.fecha_salida);
+          const duracion = Math.ceil((fechaSalida - fechaEntrada) / (1000 * 60 * 60 * 24));
+          
+          return (
+            <div key={reserva.id_reserva} className="card mb-3 shadow-sm">
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-start mb-2">
+                  <h6 className="card-title mb-0 fw-bold text-primary">
+                    Reserva #{reserva.id_reserva}
+                  </h6>
+                  <Badge bg={obtenerColorEstado(reserva.estado)} className="ms-2">
                     {reserva.estado || 'N/A'}
                   </Badge>
-                </td>
-                <td>{reserva.huesped?.nombre ?? ''} {reserva.huesped?.apellidos ?? ''}</td>
-                <td>{mostrarHabitaciones(reserva.detalles_reserva)}</td>
-                <td>{duracion} {duracion === 1 ? 'día' : 'días'}</td>
-                <td>
-                  <Button variant="info" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}`)}>
+                </div>
+                
+                <div className="row g-2 mb-3">
+                  <div className="col-6">
+                    <small className="text-muted d-block">Huésped</small>
+                    <div className="fw-semibold">
+                      {reserva.huesped?.nombre ?? ''} {reserva.huesped?.apellidos ?? ''}
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <small className="text-muted d-block">Habitación</small>
+                    <div className="fw-semibold">
+                      {mostrarHabitaciones(reserva.detalles_reserva)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row g-2 mb-3">
+                  <div className="col-4">
+                    <small className="text-muted d-block">Entrada</small>
+                    <div className="small fw-semibold">
+                      {fechaEntrada.toLocaleDateString('es-ES', { 
+                        day: '2-digit', 
+                        month: '2-digit' 
+                      })}
+                    </div>
+                  </div>
+                  <div className="col-4">
+                    <small className="text-muted d-block">Salida</small>
+                    <div className="small fw-semibold">
+                      {fechaSalida.toLocaleDateString('es-ES', { 
+                        day: '2-digit', 
+                        month: '2-digit' 
+                      })}
+                    </div>
+                  </div>
+                  <div className="col-4">
+                    <small className="text-muted d-block">Duración</small>
+                    <div className="small fw-semibold">
+                      {duracion} {duracion === 1 ? 'día' : 'días'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="d-flex flex-wrap gap-2">
+                  <Button 
+                    variant="info" 
+                    size="sm" 
+                    className="flex-fill"
+                    onClick={() => router.push(`/reservas/${reserva.id_reserva}`)}
+                  >
                     Ver
-                  </Button>{" "}
+                  </Button>
+                  
                   {user && (user.rol === "admin" || user.rol === "recepcionista") && (
                     <>
-                      <Button variant="warning" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}?modo=editar`)}>
+                      <Button 
+                        variant="warning" 
+                        size="sm" 
+                        className="flex-fill"
+                        onClick={() => router.push(`/reservas/${reserva.id_reserva}?modo=editar`)}
+                      >
                         Editar
-                      </Button>{" "}
-                      <Button variant="danger" size="sm" onClick={() => manejarEliminar(reserva.id_reserva)}>
+                      </Button>
+                      
+                      <Button 
+                        variant="success" 
+                        size="sm" 
+                        className="flex-fill"
+                        onClick={() => {
+                          const fechaSalida = new Date(reserva.fecha_salida).toISOString().split('T')[0];
+                          const fechaEntrada = new Date(reserva.fecha_entrada);
+                          const fechaFin = new Date(reserva.fecha_salida);
+                          const diasEstancia = Math.ceil((fechaFin - fechaEntrada) / (1000 * 60 * 60 * 24));
+                          let monto = 0;
+                          if (reserva.detalles_reserva && reserva.detalles_reserva.length > 0) {
+                            reserva.detalles_reserva.forEach(detalle => {
+                              const precio = detalle.precio_aplicado || 0;
+                              const noches = detalle.noches || diasEstancia;
+                              monto += precio * noches;
+                            });
+                          }
+                          router.push(`/facturas/crear?fecha=${fechaSalida}&id_reserva=${reserva.id_reserva}&monto=${monto}`);
+                        }}
+                      >
+                        Facturar
+                      </Button>
+                      
+                      <Button 
+                        variant="danger" 
+                        size="sm" 
+                        className="w-100 mt-2"
+                        onClick={() => manejarEliminar(reserva.id_reserva)}
+                      >
                         Eliminar
                       </Button>
                     </>
                   )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </Table>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </>
   );
 }

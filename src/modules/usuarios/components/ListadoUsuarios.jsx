@@ -63,36 +63,99 @@ export default function ListadoUsuarios() {
     <>
       {error && <Alert variant="danger">{error}</Alert>}
       {mensaje && <Alert variant="success">{mensaje}</Alert>}
-      <Table striped bordered hover responsive>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre de usuario</th>
-            <th>Rol</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {usuarios.map((usuario) => (
-            <tr key={usuario.id_usuario}>
-              <td>{usuario.id_usuario}</td>
-              <td>{usuario.nombre_usuario}</td>
-              <td>{usuario.rol}</td>
-              <td>
-                <Button variant="info" size="sm" href={`/usuarios/${usuario.id_usuario}`}>
+      {/* Vista de tabla para pantallas grandes */}
+      <div className="d-none d-lg-block">
+        <Table striped bordered hover responsive>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre de usuario</th>
+              <th>Rol</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {usuarios.map((usuario) => (
+              <tr key={usuario.id_usuario}>
+                <td>{usuario.id_usuario}</td>
+                <td>{usuario.nombre_usuario}</td>
+                <td>
+                  <span className={`badge bg-${
+                    usuario.rol === 'admin' ? 'primary' : 
+                    usuario.rol === 'recepcionista' ? 'info' : 'secondary'
+                  }`}>
+                    {usuario.rol}
+                  </span>
+                </td>
+                <td>
+                  <Button variant="info" size="sm" href={`/usuarios/${usuario.id_usuario}`}>
+                    Ver
+                  </Button>{" "}
+                  <Button variant="warning" size="sm" href={`/usuarios/${usuario.id_usuario}?modo=editar`}>
+                    Editar
+                  </Button>{" "}
+                  <Button variant="danger" size="sm" onClick={() => manejarEliminar(usuario.id_usuario)}>
+                    Eliminar
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
+
+      {/* Vista de tarjetas para móviles */}
+      <div className="d-lg-none">
+        {usuarios.map((usuario) => (
+          <div key={usuario.id_usuario} className="card mb-3 shadow-sm">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-start mb-3">
+                <h6 className="card-title mb-0 fw-bold text-primary">
+                  {usuario.nombre_usuario}
+                </h6>
+                <div className="d-flex align-items-center gap-2">
+                  <span className={`badge bg-${
+                    usuario.rol === 'admin' ? 'primary' : 
+                    usuario.rol === 'recepcionista' ? 'info' : 'secondary'
+                  }`}>
+                    {usuario.rol}
+                  </span>
+                  <small className="text-muted">#{usuario.id_usuario}</small>
+                </div>
+              </div>
+
+              <div className="d-flex flex-wrap gap-2">
+                <Button 
+                  variant="info" 
+                  size="sm" 
+                  className="flex-fill"
+                  href={`/usuarios/${usuario.id_usuario}`}
+                >
                   Ver
-                </Button>{" "}
-                <Button variant="warning" size="sm" href={`/usuarios/${usuario.id_usuario}?modo=editar`}>
+                </Button>
+                
+                <Button 
+                  variant="warning" 
+                  size="sm" 
+                  className="flex-fill"
+                  href={`/usuarios/${usuario.id_usuario}?modo=editar`}
+                >
                   Editar
-                </Button>{" "}
-                <Button variant="danger" size="sm" onClick={() => manejarEliminar(usuario.id_usuario)}>
+                </Button>
+                
+                <Button 
+                  variant="danger" 
+                  size="sm" 
+                  className="w-100 mt-2"
+                  onClick={() => manejarEliminar(usuario.id_usuario)}
+                >
                   Eliminar
                 </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </>
   );
 }

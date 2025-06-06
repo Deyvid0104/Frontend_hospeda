@@ -3,6 +3,7 @@ import "./globals.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { AuthProvider } from "../context/AuthContext";
 import BarraNavegacion from "../components/Navbar";
+import LayoutWrapper from "./layout-wrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,8 +25,10 @@ export default function RootLayout({ children }) {
     <html lang="es">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AuthProvider>
-          <BarraNavegacion />
-          <main className="container">{children}</main>
+          <LayoutWrapper>
+            <BarraNavegacion />
+            <main className="container">{children}</main>
+          </LayoutWrapper>
         </AuthProvider>
       </body>
     </html>
