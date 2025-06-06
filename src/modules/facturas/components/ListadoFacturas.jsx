@@ -56,7 +56,8 @@ export default function ListadoFacturas({ onImprimir }) {
     try {
       await eliminarFactura(id);
       setMensaje("Factura eliminada correctamente");
-      cargarFacturas();
+      // Forzar recarga con filtros actuales para evitar error
+      await cargarFacturas(filtros);
     } catch (err) {
       setError("Error al eliminar la factura");
     }

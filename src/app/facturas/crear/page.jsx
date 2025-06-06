@@ -49,11 +49,11 @@ export default function CrearFactura() {
     setCargando(true);
 
     try {
-      // Calcular total con descuento aplicado
+      // Enviar monto total sin aplicar descuento, el backend aplicará el descuento
       const montoNum = parseFloat(montoTotal);
       const descuentoNum = parseFloat(descuento);
-      const montoConDescuento = montoNum - (montoNum * (descuentoNum / 100));
-      const data = { fecha, id_reserva: idReserva, monto_total: montoConDescuento.toFixed(2), descuento, metodo_pago: metodoPago, estado };
+      const idReservaNum = Number(idReserva);
+      const data = { fecha, id_reserva: idReservaNum, monto_total: montoNum.toFixed(2), descuento: descuentoNum, metodo_pago: metodoPago, estado };
       await api.post("/factura", data);
       setExito("Factura creada exitosamente");
       setMensajeVisible("exito");
