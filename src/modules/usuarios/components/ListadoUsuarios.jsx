@@ -9,7 +9,8 @@
 import React, { useEffect, useState } from "react";
 import { obtenerUsuarios, eliminarUsuario } from "../services/usuariosService";
 import Cargando from "../../../components/Cargando";
-import { Table, Button, Alert } from "react-bootstrap";
+import { Table, Alert } from "react-bootstrap";
+import CustomButton from "../../../components/CustomButton";
 
 export default function ListadoUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
@@ -88,15 +89,15 @@ export default function ListadoUsuarios() {
                   </span>
                 </td>
                 <td>
-                  <Button variant="info" size="sm" href={`/usuarios/${usuario.id_usuario}`}>
+                  <CustomButton variant="info" size="sm" icon="view" href={`/usuarios/${usuario.id_usuario}`}>
                     Ver
-                  </Button>{" "}
-                  <Button variant="warning" size="sm" href={`/usuarios/${usuario.id_usuario}?modo=editar`}>
+                  </CustomButton>{" "}
+                  <CustomButton variant="warning" size="sm" icon="edit" href={`/usuarios/${usuario.id_usuario}?modo=editar`}>
                     Editar
-                  </Button>{" "}
-                  <Button variant="danger" size="sm" onClick={() => manejarEliminar(usuario.id_usuario)}>
+                  </CustomButton>{" "}
+                  <CustomButton variant="danger" size="sm" icon="delete" onClick={() => manejarEliminar(usuario.id_usuario)}>
                     Eliminar
-                  </Button>
+                  </CustomButton>
                 </td>
               </tr>
             ))}
@@ -125,32 +126,35 @@ export default function ListadoUsuarios() {
               </div>
 
               <div className="d-flex flex-wrap gap-2">
-                <Button 
+                <CustomButton 
                   variant="info" 
                   size="sm" 
                   className="flex-fill"
+                  icon="view"
                   href={`/usuarios/${usuario.id_usuario}`}
                 >
                   Ver
-                </Button>
+                </CustomButton>
                 
-                <Button 
+                <CustomButton 
                   variant="warning" 
                   size="sm" 
                   className="flex-fill"
+                  icon="edit"
                   href={`/usuarios/${usuario.id_usuario}?modo=editar`}
                 >
                   Editar
-                </Button>
+                </CustomButton>
                 
-                <Button 
+                <CustomButton 
                   variant="danger" 
                   size="sm" 
                   className="w-100 mt-2"
+                  icon="delete"
                   onClick={() => manejarEliminar(usuario.id_usuario)}
                 >
                   Eliminar
-                </Button>
+                </CustomButton>
               </div>
             </div>
           </div>

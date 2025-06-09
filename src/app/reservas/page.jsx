@@ -11,7 +11,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import ListadoReservas from "../../modules/reservas/components/ListadoReservas";
 import { useAuth } from "../../context/AuthContext";
-import { Button } from "react-bootstrap";
+import CustomButton from "../../components/CustomButton";
 
 export default function PaginaReservas() {
   // Hook para navegación programática
@@ -29,9 +29,9 @@ export default function PaginaReservas() {
       <h1>Reservas</h1>
       {/* Mostrar botón crear solo para roles admin o recepcionista */}
       {user && (user.rol === "admin" || user.rol === "recepcionista") && (
-        <Button variant="primary" className="mb-3" onClick={handleCrearClick}>
+        <CustomButton variant="primary" className="mb-3" onClick={handleCrearClick}>
           Crear Reserva
-        </Button>
+        </CustomButton>
       )}
       {/* Componente que muestra el listado de reservas */}
       <ListadoReservas />

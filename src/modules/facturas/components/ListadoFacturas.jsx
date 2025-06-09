@@ -10,7 +10,8 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { obtenerFacturas, eliminarFactura } from "../services/facturasService";
 import Cargando from "../../../components/Cargando";
-import { Table, Button, Alert, Form, Row, Col } from "react-bootstrap";
+import { Table, Alert, Form, Row, Col } from "react-bootstrap";
+import CustomButton from "../../../components/CustomButton";
 
 export default function ListadoFacturas({ onImprimir }) {
   const { user } = useAuth();
@@ -107,7 +108,7 @@ export default function ListadoFacturas({ onImprimir }) {
             </Form.Group>
           </Col>
           <Col md={2} className="d-flex align-items-end">
-            <Button
+            <CustomButton
               variant="secondary"
               onClick={() => {
                 setFiltroEstado("");
@@ -116,7 +117,7 @@ export default function ListadoFacturas({ onImprimir }) {
               }}
             >
               Limpiar
-            </Button>
+            </CustomButton>
           </Col>
         </Row>
       </Form>
@@ -153,20 +154,20 @@ export default function ListadoFacturas({ onImprimir }) {
                   </td>
                   <td>{factura.metodo_pago}</td>
                   <td>
-                    <Button variant="info" size="sm" href={`/facturas/${factura.id_factura}`}>
+                    <CustomButton variant="info" size="sm" icon="view" href={`/facturas/${factura.id_factura}`}>
                       Ver
-                    </Button>{" "}
+                    </CustomButton>{" "}
                     {user && (user.rol === "admin" || user.rol === "recepcionista") && (
                       <>
-                        <Button variant="warning" size="sm" href={`/facturas/${factura.id_factura}?modo=editar`}>
+                        <CustomButton variant="warning" size="sm" icon="edit" href={`/facturas/${factura.id_factura}?modo=editar`}>
                           Editar
-                        </Button>{" "}
-                        <Button variant="danger" size="sm" onClick={() => manejarEliminar(factura.id_factura)}>
-                          Eliminar
-                        </Button>{" "}
-                        <Button variant="success" size="sm" onClick={() => onImprimir(factura.id_factura)}>
+                        </CustomButton>{" "}
+                        <CustomButton variant="success" size="sm" icon="print" onClick={() => onImprimir(factura.id_factura)}>
                           Imprimir
-                        </Button>
+                        </CustomButton>{" "}
+                        <CustomButton variant="danger" size="sm" icon="delete" onClick={() => manejarEliminar(factura.id_factura)}>
+                          Eliminar
+                        </CustomButton>
                       </>
                     )}
                   </td>
@@ -218,47 +219,51 @@ export default function ListadoFacturas({ onImprimir }) {
                   </div>
                 </div>
 
-                <div className="d-flex flex-wrap gap-2">
-                  <Button 
-                    variant="info" 
-                    size="sm" 
-                    className="flex-fill"
-                    href={`/facturas/${factura.id_factura}`}
-                  >
-                    Ver
-                  </Button>
-                  
-                  {user && (user.rol === "admin" || user.rol === "recepcionista") && (
-                    <>
-                      <Button 
-                        variant="warning" 
-                        size="sm" 
-                        className="flex-fill"
-                        href={`/facturas/${factura.id_factura}?modo=editar`}
-                      >
-                        Editar
-                      </Button>
-                      
-                      <Button 
-                        variant="success" 
-                        size="sm" 
-                        className="flex-fill"
-                        onClick={() => onImprimir(factura.id_factura)}
-                      >
-                        Imprimir
-                      </Button>
-                      
-                      <Button 
-                        variant="danger" 
-                        size="sm" 
-                        className="w-100 mt-2"
-                        onClick={() => manejarEliminar(factura.id_factura)}
-                      >
-                        Eliminar
-                      </Button>
-                    </>
-                  )}
-                </div>
+                  <div className="d-flex flex-wrap gap-2">
+                    <CustomButton 
+                      variant="info" 
+                      size="sm" 
+                      className="flex-fill"
+                      icon="view"
+                      href={`/facturas/${factura.id_factura}`}
+                    >
+                      Ver
+                    </CustomButton>
+                    
+                    {user && (user.rol === "admin" || user.rol === "recepcionista") && (
+                      <>
+                        <CustomButton 
+                          variant="warning" 
+                          size="sm" 
+                          className="flex-fill"
+                          icon="edit"
+                          href={`/facturas/${factura.id_factura}?modo=editar`}
+                        >
+                          Editar
+                        </CustomButton>
+                        
+                        <CustomButton 
+                          variant="success" 
+                          size="sm" 
+                          className="flex-fill"
+                          icon="print"
+                          onClick={() => onImprimir(factura.id_factura)}
+                        >
+                          Imprimir
+                        </CustomButton>
+                        
+                        <CustomButton 
+                          variant="danger" 
+                          size="sm" 
+                          className="w-100 mt-2"
+                          icon="delete"
+                          onClick={() => manejarEliminar(factura.id_factura)}
+                        >
+                          Eliminar
+                        </CustomButton>
+                      </>
+                    )}
+                  </div>
               </div>
             </div>
           );

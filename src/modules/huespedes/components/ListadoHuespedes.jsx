@@ -10,7 +10,8 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { obtenerHuespedes, eliminarHuesped } from "../services/huespedesService";
 import Cargando from "../../../components/Cargando";
-import { Table, Button, Alert, Form, Row, Col } from "react-bootstrap";
+import { Table, Alert, Form, Row, Col } from "react-bootstrap";
+import CustomButton from "../../../components/CustomButton";
 
 export default function ListadoHuespedes() {
   const { user } = useAuth();
@@ -112,12 +113,12 @@ export default function ListadoHuespedes() {
             />
           </Col>
           <Col md={3} sm={6} className="mb-2 d-flex gap-2">
-            <Button variant="primary" onClick={manejarFiltrar}>
+            <CustomButton variant="primary" onClick={manejarFiltrar}>
               Filtrar
-            </Button>
-            <Button variant="secondary" onClick={manejarLimpiarFiltros}>
+            </CustomButton>
+            <CustomButton variant="secondary" onClick={manejarLimpiarFiltros}>
               Limpiar
-            </Button>
+            </CustomButton>
           </Col>
         </Row>
       </Form>
@@ -144,27 +145,27 @@ export default function ListadoHuespedes() {
                 <td>{huesped.email}</td>
                 <td>{huesped.telefono}</td>
                 <td>
-                  <Button variant="info" size="sm" href={`/huespedes/${huesped.id_huesped}`}>
+                  <CustomButton variant="info" size="sm" icon="view" href={`/huespedes/${huesped.id_huesped}`}>
                     Ver
-                  </Button>{" "}
+                  </CustomButton>{" "}
                   {(user && (user.rol === "admin" || user.rol === "recepcionista")) && (
                     <>
-                      <Button variant="warning" size="sm" href={`/huespedes/${huesped.id_huesped}?modo=editar`}>
+                      <CustomButton variant="warning" size="sm" icon="edit" href={`/huespedes/${huesped.id_huesped}?modo=editar`}>
                         Editar
-                      </Button>{" "}
-                      <Button 
+                      </CustomButton>{" "}
+                      <CustomButton 
                         variant="success" 
                         size="sm" 
                         href={`/reservas/crear?huespedId=${huesped.id_huesped}`}
                       >
                         Crear Reserva
-                      </Button>
+                      </CustomButton>
                     </>
                   )}{" "}
                   {user && user.rol === "admin" && (
-                    <Button variant="danger" size="sm" onClick={() => manejarEliminar(huesped.id_huesped)}>
+                    <CustomButton variant="danger" size="sm" icon="delete" onClick={() => manejarEliminar(huesped.id_huesped)}>
                       Eliminar
-                    </Button>
+                    </CustomButton>
                   )}
                 </td>
               </tr>
@@ -207,46 +208,49 @@ export default function ListadoHuespedes() {
               </div>
 
               <div className="d-flex flex-wrap gap-2">
-                <Button 
+                <CustomButton 
                   variant="info" 
                   size="sm" 
                   className="flex-fill"
+                  icon="view"
                   href={`/huespedes/${huesped.id_huesped}`}
                 >
                   Ver
-                </Button>
+                </CustomButton>
                 
                 {(user && (user.rol === "admin" || user.rol === "recepcionista")) && (
                   <>
-                    <Button 
+                    <CustomButton 
                       variant="warning" 
                       size="sm" 
                       className="flex-fill"
+                      icon="edit"
                       href={`/huespedes/${huesped.id_huesped}?modo=editar`}
                     >
                       Editar
-                    </Button>
+                    </CustomButton>
                     
-                    <Button 
+                    <CustomButton 
                       variant="success" 
                       size="sm" 
                       className="flex-fill"
                       href={`/reservas/crear?huespedId=${huesped.id_huesped}`}
                     >
                       Crear Reserva
-                    </Button>
+                    </CustomButton>
                   </>
                 )}
                 
                 {user && user.rol === "admin" && (
-                  <Button 
+                  <CustomButton 
                     variant="danger" 
                     size="sm" 
                     className="w-100 mt-2"
+                    icon="delete"
                     onClick={() => manejarEliminar(huesped.id_huesped)}
                   >
                     Eliminar
-                  </Button>
+                  </CustomButton>
                 )}
               </div>
             </div>

@@ -9,7 +9,8 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { obtenerReservas, eliminarReserva } from "../services/reservasService";
-import Carga from "../../../components/Cargando";
+import { obtenerFacturaPorReserva } from "../../facturas/services/facturasService";
+import Cargando from "../../../components/Cargando";
 import { Table, Button, Alert, Badge, Form, Row, Col } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 
@@ -17,6 +18,7 @@ export default function ListadoReservas() {
   const router = useRouter();
   const { user } = useAuth();
   const [reservas, setReservas] = useState([]);
+  const [facturasMap, setFacturasMap] = useState({}); // id_reserva -> id_factura
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
@@ -75,6 +77,21 @@ export default function ListadoReservas() {
       } else {
         setReservas(reservasOrdenadas);
       }
+
+      // Obtener facturas asociadas a reservas
+      const facturasMapTemp = {};
+      await Promise.all(reservasOrdenadas.map(async (reserva) => {
+        try {
+          const resFactura = await obtenerFacturaPorReserva(reserva.id_reserva);
+          if (resFactura.data && resFactura.data.id_factura) {
+            facturasMapTemp[reserva.id_reserva] = resFactura.data.id_factura;
+          }
+        } catch (error) {
+          // No hay factura para esta reserva o error, ignorar
+        }
+      }));
+      setFacturasMap(facturasMapTemp);
+
     } catch (err) {
       console.error("Error al cargar datos:", err);
       setError(err.message || "No se pudieron cargar las reservas. Por favor, intente nuevamente más tarde.");
@@ -135,7 +152,7 @@ export default function ListadoReservas() {
     return habitaciones.length > 0 ? habitaciones.join(", ") : "Sin asignar";
   };
 
-  if (cargando) return <Carga />;
+  if (cargando) return <Cargando />;
 
   return (
     <>
@@ -247,23 +264,31 @@ export default function ListadoReservas() {
                     <Button variant="warning" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}?modo=editar`)}>
                       Editar
                     </Button>{" "}
-                    <Button variant="success" size="sm" onClick={() => {
-                      const fechaSalida = new Date(reserva.fecha_salida).toISOString().split('T')[0];
-                      const fechaEntrada = new Date(reserva.fecha_entrada);
-                      const fechaFin = new Date(reserva.fecha_salida);
-                      const diasEstancia = Math.ceil((fechaFin - fechaEntrada) / (1000 * 60 * 60 * 24));
-                      let monto = 0;
-                      if (reserva.detalles_reserva && reserva.detalles_reserva.length > 0) {
-                        reserva.detalles_reserva.forEach(detalle => {
-                          const precio = detalle.precio_aplicado || 0;
-                          const noches = detalle.noches || diasEstancia;
-                          monto += precio * noches;
-                        });
-                      }
-                      router.push(`/facturas/crear?fecha=${fechaSalida}&id_reserva=${reserva.id_reserva}&monto=${monto}`);
-                    }}>
-                      Facturar
-                    </Button>{" "}
+                    {facturasMap[reserva.id_reserva] ? (
+                      <Button variant="primary" size="sm" onClick={() => {
+                        router.push(`/facturas/${facturasMap[reserva.id_reserva]}`);
+                      }}>
+                        Imprimir
+                      </Button>
+                    ) : (
+                      <Button variant="success" size="sm" onClick={() => {
+                        const fechaSalida = new Date(reserva.fecha_salida).toISOString().split('T')[0];
+                        const fechaEntrada = new Date(reserva.fecha_entrada);
+                        const fechaFin = new Date(reserva.fecha_salida);
+                        const diasEstancia = Math.ceil((fechaFin - fechaEntrada) / (1000 * 60 * 60 * 24));
+                        let monto = 0;
+                        if (reserva.detalles_reserva && reserva.detalles_reserva.length > 0) {
+                          reserva.detalles_reserva.forEach(detalle => {
+                            const precio = detalle.precio_aplicado || 0;
+                            const noches = detalle.noches || diasEstancia;
+                            monto += precio * noches;
+                          });
+                        }
+                        router.push(`/facturas/crear?fecha=${fechaSalida}&id_reserva=${reserva.id_reserva}&monto=${monto}`);
+                      }}>
+                        Facturar
+                      </Button>
+                    )}
                     <Button variant="danger" size="sm" onClick={() => manejarEliminar(reserva.id_reserva)}>
                       Eliminar
                     </Button>

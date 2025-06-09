@@ -10,7 +10,8 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { obtenerHabitaciones, eliminarHabitacion } from "../services/habitacionesService";
 import Cargando from "../../../components/Cargando";
-import { Table, Button, Alert } from "react-bootstrap";
+import { Table, Alert } from "react-bootstrap";
+import CustomButton from "../../../components/CustomButton";
 
 export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
   // Obtener usuario actual para control de acceso
@@ -124,17 +125,17 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
                 </td>
                 <td>{hab.capacidad}</td>
                 <td>
-                  <Button variant="info" size="sm" href={`/habitaciones/${hab.id_habitacion}`}>
+                  <CustomButton variant="info" size="sm" icon="view" href={`/habitaciones/${hab.id_habitacion}`}>
                     Ver
-                  </Button>{" "}
+                  </CustomButton>{" "}
                   {user && user.rol === "admin" && (
                     <>
-                      <Button variant="warning" size="sm" href={`/habitaciones/${hab.id_habitacion}?modo=editar`}>
+                      <CustomButton variant="warning" size="sm" icon="edit" href={`/habitaciones/${hab.id_habitacion}?modo=editar`}>
                         Editar
-                      </Button>{" "}
-                      <Button variant="danger" size="sm" onClick={() => manejarEliminar(hab.id_habitacion)}>
+                      </CustomButton>{" "}
+                      <CustomButton variant="danger" size="sm" icon="delete" onClick={() => manejarEliminar(hab.id_habitacion)}>
                         Eliminar
-                      </Button>
+                      </CustomButton>
                     </>
                   )}
                 </td>
@@ -178,34 +179,37 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
               </div>
 
               <div className="d-flex flex-wrap gap-2">
-                <Button 
+                <CustomButton 
                   variant="info" 
                   size="sm" 
                   className="flex-fill"
+                  icon="view"
                   href={`/habitaciones/${hab.id_habitacion}`}
                 >
                   Ver
-                </Button>
+                </CustomButton>
                 
                 {user && user.rol === "admin" && (
                   <>
-                    <Button 
+                    <CustomButton 
                       variant="warning" 
                       size="sm" 
                       className="flex-fill"
+                      icon="edit"
                       href={`/habitaciones/${hab.id_habitacion}?modo=editar`}
                     >
                       Editar
-                    </Button>
+                    </CustomButton>
                     
-                    <Button 
+                    <CustomButton 
                       variant="danger" 
                       size="sm" 
                       className="w-100 mt-2"
+                      icon="delete"
                       onClick={() => manejarEliminar(hab.id_habitacion)}
                     >
                       Eliminar
-                    </Button>
+                    </CustomButton>
                   </>
                 )}
               </div>
