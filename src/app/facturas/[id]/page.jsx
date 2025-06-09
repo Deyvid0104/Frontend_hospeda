@@ -106,8 +106,15 @@ export default function DetalleFactura() {
     }
   };
 
-  const handleImprimirClick = () => {
-    setShowModal(true);
+  const handleImprimirClick = async () => {
+    setError("");
+    try {
+      const res = await obtenerFacturaPorId(id);
+      setFactura(res.data);
+      setShowModal(true);
+    } catch (error) {
+      setError("Error al cargar la factura para imprimir");
+    }
   };
 
   if (loading || !user || (user.rol !== "admin" && user.rol !== "recepcionista")) {

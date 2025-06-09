@@ -487,6 +487,11 @@ main {
         border-color: #ffc107;
       }
 
+      .btn-success {
+        color: #003d8f;
+        border-color: #003d8f;
+      }
+
       .btn-danger {
         color: #dc3545;
         border-color: #dc3545;
@@ -551,15 +556,11 @@ main {
     background-color: #28a745;
     color: rgb(0, 0, 0);
     border: 0.0625rem solid #28a745;
-    min-width: 6.25rem;
-    transition: all 0.2s ease;
 
     &:hover {
-      background-color: #218838;
-      color: rgb(0, 0, 0) !important;
-      border-color: #1e7e34;
-      transform: translateY(-0.0625rem);
-      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+      background-color: white;
+      color: #28a745;
+      border-color: #28a745;
     }
   }
 }
@@ -630,10 +631,11 @@ main {
 .btn-primary {
   background-color: var(--primary-color);
 
-  color: white;
+  color: #68c5ff;
 
   &:hover {
     background-color: #003d8f;
+    color: #003d8f;
     transform: translateY(-0.0625rem);
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
   }
@@ -714,7 +716,7 @@ main {
   }
 
   .table {
-    font-size: 0.85rem;
+    font-size: 0.85rem !important;
     margin: 0 !important;
     
     th, td {

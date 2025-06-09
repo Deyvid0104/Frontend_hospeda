@@ -11,6 +11,8 @@ export const obtenerFacturas = (estado = "", metodo_pago = "") => {
 
 export const obtenerFacturaPorId = (id) => api.get(`/factura/${id}`);
 
+export const obtenerFacturaPorReserva = (id_reserva) => api.get(`/factura/por-reserva/${id_reserva}`);
+
 export const crearFactura = (datos) => api.post("/factura", datos);
 
 export const actualizarFactura = (id, datos) => api.put(`/factura/${id}`, datos);

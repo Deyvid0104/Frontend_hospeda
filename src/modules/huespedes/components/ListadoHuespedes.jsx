@@ -9,7 +9,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { obtenerHuespedes, eliminarHuesped } from "../services/huespedesService";
-import Carga from "../../../components/Cargando";
+import Cargando from "../../../components/Cargando";
 import { Table, Button, Alert, Form, Row, Col } from "react-bootstrap";
 
 export default function ListadoHuespedes() {
@@ -72,7 +72,7 @@ export default function ListadoHuespedes() {
     cargarHuespedes();
   };
 
-  if (cargando) return <Carga />;
+  if (cargando) return <Cargando />;
 
   return (
     <>

@@ -3,8 +3,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://5.189.171.241:30400",   
-  // baseURL: "http://localhost:4000",
+  // baseURL: "http://5.189.171.241:30400",   
+  baseURL: "http://localhost:4000",
+
 
 });
 
@@ -56,7 +57,9 @@ api.interceptors.response.use(
         return Promise.reject(new Error(errorMessage));
       default:
         const defaultMessage = data?.message || error.message || `Error ${status}`;
-        console.error(`Error ${status}:`, defaultMessage);
+        if (!(status === 409 && defaultMessage.includes("Ya existe una factura para la reserva"))) {
+          console.error(`Error ${status}:`, defaultMessage);
+        }
         return Promise.reject(new Error(defaultMessage));
     }
   }

@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import api from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
 import { Form, Button, Alert, Container, Row, Col } from "react-bootstrap";
+import { FiPlus } from "react-icons/fi";
 
 // Componente que maneja la lógica del formulario
 function CrearReservaForm() {
@@ -32,7 +33,6 @@ function CrearReservaForm() {
   const [exito, setExito] = useState("");
   // Estado para controlar el estado de carga del formulario
   const [cargando, setCargando] = useState(false);
-
 
   // Efecto para controlar acceso según rol de usuario
   useEffect(() => {
@@ -193,8 +193,15 @@ function CrearReservaForm() {
               </Form.Select>
             </Form.Group>
 
-            <Button variant="primary" type="submit" disabled={cargando}>
-              {cargando ? "Creando..." : "Crear Reserva"}
+            <Button type="submit" disabled={cargando} className="btn-primary btn-action">
+              {cargando ? (
+                "Creando..."
+              ) : (
+                <>
+                  <FiPlus />
+                  Crear Reserva
+                </>
+              )}
             </Button>
           </Form>
         </Col>

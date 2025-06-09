@@ -8,7 +8,7 @@
 
 import React, { useEffect, useState } from "react";
 import { obtenerUsuarios, eliminarUsuario } from "../services/usuariosService";
-import Carga from "../../../components/Cargando";
+import Cargando from "../../../components/Cargando";
 import { Table, Button, Alert } from "react-bootstrap";
 
 export default function ListadoUsuarios() {
@@ -57,7 +57,7 @@ export default function ListadoUsuarios() {
     }
   };
 
-  if (cargando) return <Carga />;
+  if (cargando) return <Cargando />;
 
   return (
     <>
