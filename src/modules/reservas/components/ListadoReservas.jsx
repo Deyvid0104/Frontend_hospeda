@@ -11,7 +11,8 @@ import { useAuth } from "../../../context/AuthContext";
 import { obtenerReservas, eliminarReserva } from "../services/reservasService";
 import { obtenerFacturaPorReserva } from "../../facturas/services/facturasService";
 import Cargando from "../../../components/Cargando";
-import { Table, Button, Alert, Badge, Form, Row, Col } from "react-bootstrap";
+import CustomButton from "../../../components/CustomButton";
+import { Table, Alert, Badge, Form, Row, Col } from "react-bootstrap";
 import { useRouter } from "next/navigation";
 
 export default function ListadoReservas() {
@@ -199,13 +200,13 @@ export default function ListadoReservas() {
                     }
                   }}
                 />
-                <Button variant="primary" className="ms-2" onClick={() => {
+                <CustomButton variant="primary" className="ms-2" onClick={() => {
                     setFiltros((prev) => ({ ...prev, nombre_huesped: nombreBusqueda }));
                   }}
                 >
                   Filtrar
-                </Button>
-                <Button
+                </CustomButton>
+                <CustomButton
                   variant="secondary" className="ms-2" onClick={() => {
                     setNombreBusqueda(""); setFiltros({
                       fecha_entrada: "", fecha_salida: "", nombre_huesped: "",
@@ -213,7 +214,7 @@ export default function ListadoReservas() {
                   }}
                 >
                   Limpiar
-                </Button>
+                </CustomButton>
               </div>
             </Form.Group>
           </Col>
@@ -256,22 +257,22 @@ export default function ListadoReservas() {
                   <td>{mostrarHabitaciones(reserva.detalles_reserva)}</td>
                   <td>{duracion} {duracion === 1 ? 'día' : 'días'}</td>
                   <td>
-                    <Button variant="info" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}`)}>
+                    <CustomButton variant="info" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}`)}>
                       Ver
-                    </Button>{" "}
+                    </CustomButton>{" "}
                     {user && (user.rol === "admin" || user.rol === "recepcionista") && (
                       <>
-                    <Button variant="warning" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}?modo=editar`)}>
+                    <CustomButton variant="warning" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}?modo=editar`)}>
                       Editar
-                    </Button>{" "}
+                    </CustomButton>{" "}
                     {facturasMap[reserva.id_reserva] ? (
-                      <Button variant="primary" size="sm" onClick={() => {
+                      <CustomButton variant="primary" size="sm" onClick={() => {
                         router.push(`/facturas/${facturasMap[reserva.id_reserva]}`);
                       }}>
                         Imprimir
-                      </Button>
+                      </CustomButton>
                     ) : (
-                      <Button variant="success" size="sm" onClick={() => {
+                      <CustomButton variant="success" size="sm" onClick={() => {
                         const fechaSalida = new Date(reserva.fecha_salida).toISOString().split('T')[0];
                         const fechaEntrada = new Date(reserva.fecha_entrada);
                         const fechaFin = new Date(reserva.fecha_salida);
@@ -287,11 +288,11 @@ export default function ListadoReservas() {
                         router.push(`/facturas/crear?fecha=${fechaSalida}&id_reserva=${reserva.id_reserva}&monto=${monto}`);
                       }}>
                         Facturar
-                      </Button>
+                      </CustomButton>
                     )}
-                    <Button variant="danger" size="sm" onClick={() => manejarEliminar(reserva.id_reserva)}>
+                    <CustomButton variant="danger" size="sm" onClick={() => manejarEliminar(reserva.id_reserva)}>
                       Eliminar
-                    </Button>
+                    </CustomButton>
                       </>
                     )}
                   </td>
@@ -364,57 +365,68 @@ export default function ListadoReservas() {
                 </div>
 
                 <div className="d-flex flex-wrap gap-2">
-                  <Button 
+                  <CustomButton 
                     variant="info" 
                     size="sm" 
                     className="flex-fill"
                     onClick={() => router.push(`/reservas/${reserva.id_reserva}`)}
                   >
                     Ver
-                  </Button>
+                  </CustomButton>
                   
                   {user && (user.rol === "admin" || user.rol === "recepcionista") && (
                     <>
-                      <Button 
+                      <CustomButton 
                         variant="warning" 
                         size="sm" 
                         className="flex-fill"
                         onClick={() => router.push(`/reservas/${reserva.id_reserva}?modo=editar`)}
                       >
                         Editar
-                      </Button>
+                      </CustomButton>
                       
-                      <Button 
-                        variant="success" 
-                        size="sm" 
-                        className="flex-fill"
-                        onClick={() => {
-                          const fechaSalida = new Date(reserva.fecha_salida).toISOString().split('T')[0];
-                          const fechaEntrada = new Date(reserva.fecha_entrada);
-                          const fechaFin = new Date(reserva.fecha_salida);
-                          const diasEstancia = Math.ceil((fechaFin - fechaEntrada) / (1000 * 60 * 60 * 24));
-                          let monto = 0;
-                          if (reserva.detalles_reserva && reserva.detalles_reserva.length > 0) {
-                            reserva.detalles_reserva.forEach(detalle => {
-                              const precio = detalle.precio_aplicado || 0;
-                              const noches = detalle.noches || diasEstancia;
-                              monto += precio * noches;
-                            });
-                          }
-                          router.push(`/facturas/crear?fecha=${fechaSalida}&id_reserva=${reserva.id_reserva}&monto=${monto}`);
-                        }}
-                      >
-                        Facturar
-                      </Button>
+                      {facturasMap[reserva.id_reserva] ? (
+                        <CustomButton
+                          variant="primary"
+                          size="sm"
+                          className="flex-fill"
+                          onClick={() => router.push(`/facturas/${facturasMap[reserva.id_reserva]}`)}
+                        >
+                          Imprimir
+                        </CustomButton>
+                      ) : (
+                        <CustomButton 
+                          variant="success" 
+                          size="sm" 
+                          className="flex-fill"
+                          onClick={() => {
+                            const fechaSalida = new Date(reserva.fecha_salida).toISOString().split('T')[0];
+                            const fechaEntrada = new Date(reserva.fecha_entrada);
+                            const fechaFin = new Date(reserva.fecha_salida);
+                            const diasEstancia = Math.ceil((fechaFin - fechaEntrada) / (1000 * 60 * 60 * 24));
+                            let monto = 0;
+                            if (reserva.detalles_reserva && reserva.detalles_reserva.length > 0) {
+                              reserva.detalles_reserva.forEach(detalle => {
+                                const precio = detalle.precio_aplicado || 0;
+                                const noches = detalle.noches || diasEstancia;
+                                monto += precio * noches;
+                              });
+                            }
+                            router.push(`/facturas/crear?fecha=${fechaSalida}&id_reserva=${reserva.id_reserva}&monto=${monto}`);
+                          }}
+                        >
+                          Facturar
+                        </CustomButton>
+                      )}
                       
-                      <Button 
+                      <CustomButton 
                         variant="danger" 
                         size="sm" 
                         className="w-100 mt-2"
                         onClick={() => manejarEliminar(reserva.id_reserva)}
                       >
                         Eliminar
-                      </Button>
+                      </CustomButton>
                     </>
                   )}
                 </div>

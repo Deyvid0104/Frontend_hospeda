@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import api from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
 import { Form, Button, Alert, Container, Row, Col, Modal } from "react-bootstrap";
+import { obtenerReservas, obtenerReservaPorId } from "../../../modules/reservas/services/reservasService";
+import { obtenerFacturaPorReserva } from "../../../modules/facturas/services/facturasService";
 
 function FormularioCrearFactura({ searchParams, router, user }) {
   const [fecha, setFecha] = useState("");
@@ -24,6 +26,9 @@ function FormularioCrearFactura({ searchParams, router, user }) {
   // Estado para controlar la visibilidad del modal de factura existente
   const [showModalFacturaExistente, setShowModalFacturaExistente] = useState(false);
 
+  // Estado para la lista de reservas disponibles
+  const [reservas, setReservas] = useState([]);
+
   useEffect(() => {
     if (!user || (user.rol !== "admin" && user.rol !== "recepcionista")) {
       router.push("/auth/login");
@@ -37,9 +42,89 @@ function FormularioCrearFactura({ searchParams, router, user }) {
     const montoParam = searchParams.get("monto");
 
     if (fechaParam) setFecha(fechaParam);
-    if (idReservaParam) setIdReserva(idReservaParam);
     if (montoParam) setMontoTotal(montoParam);
+
+    // Cargar reservas disponibles para facturar (filtrando las que ya tienen factura)
+    const cargarReservasDisponibles = async () => {
+      try {
+        const response = await obtenerReservas();
+        if (response?.data) {
+          const reservasTodas = response.data;
+          // Filtrar reservas que no tengan factura
+          const resultados = await Promise.all(
+            reservasTodas.map(async (reserva) => {
+              try {
+                const facturaResp = await obtenerFacturaPorReserva(reserva.id_reserva);
+                return !facturaResp?.data || facturaResp.data.length === 0;
+              } catch (error) {
+                // En caso de error, asumir que no tiene factura para no bloquear
+                return true;
+              }
+            })
+          );
+          const reservasDisponibles = reservasTodas.filter((_, index) => resultados[index]);
+          setReservas(reservasDisponibles);
+          // Si hay idReserva en params, seleccionarlo y obtener monto
+          if (idReservaParam) {
+            const reservaSeleccionada = reservasDisponibles.find(r => r.id_reserva && r.id_reserva.toString() === idReservaParam);
+            if (reservaSeleccionada) {
+              setIdReserva(idReservaParam);
+              // Solo obtener monto total desde la factura si no hay monto en params
+              if (!montoParam) {
+                obtenerFacturaPorReserva(idReservaParam).then(facturaResp => {
+                  if (facturaResp?.data?.monto_total !== undefined) {
+                    setMontoTotal(facturaResp.data.monto_total.toFixed(2));
+                  } else {
+                    setMontoTotal("");
+                  }
+                }).catch(() => setMontoTotal(""));
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error al cargar reservas disponibles:", error);
+      }
+    };
+    cargarReservasDisponibles();
   }, [searchParams]);
+
+  // Manejar cambio en selección de reserva
+  const manejarCambioReserva = async (e) => {
+    const nuevoIdReserva = e.target.value;
+    setIdReserva(nuevoIdReserva);
+    if (!nuevoIdReserva || isNaN(Number(nuevoIdReserva))) {
+      setMontoTotal("");
+      return;
+    }
+    try {
+      // Obtener factura asociada a la reserva para obtener monto total
+      const facturaResp = await obtenerFacturaPorReserva(nuevoIdReserva);
+      if (facturaResp?.data) {
+        if (facturaResp.data.monto_total !== undefined) {
+          setMontoTotal(facturaResp.data.monto_total.toFixed(2));
+        } else {
+          setMontoTotal("");
+        }
+      } else {
+        // Si no hay factura, obtener detalles de la reserva para calcular monto total
+        const reservaResp = await obtenerReservaPorId(nuevoIdReserva);
+        if (reservaResp?.data) {
+          // Calcular monto total sumando noches * precio_aplicado de detalles_reserva
+          const detalles = reservaResp.data.detalles_reserva || [];
+          const montoCalculado = detalles.reduce((total, detalle) => {
+            return total + detalle.noches * Number(detalle.precio_aplicado);
+          }, 0);
+          setMontoTotal(montoCalculado.toFixed(2));
+        } else {
+          setMontoTotal("");
+        }
+      }
+    } catch (error) {
+      console.error("Error al obtener detalles de la reserva:", error);
+      setMontoTotal("");
+    }
+  };
 
   const manejarSubmit = async (e) => {
     e.preventDefault();
@@ -116,12 +201,19 @@ function FormularioCrearFactura({ searchParams, router, user }) {
 
             <Form.Group className="mb-3" controlId="formIdReserva">
               <Form.Label>ID Reserva</Form.Label>
-              <Form.Control
-                type="text"
+              <Form.Select
                 value={idReserva}
-                onChange={(e) => setIdReserva(e.target.value)}
+                onChange={manejarCambioReserva}
                 required
-              />
+                disabled={Boolean(searchParams.get("id_reserva"))}
+              >
+                <option value="">Seleccione una reserva</option>
+                {reservas.map((reserva, index) => (
+                  <option key={`${reserva.id_reserva}-${index}`} value={reserva.id_reserva}>
+                    {reserva.id_reserva ? reserva.id_reserva.toString() : `Reserva ${index + 1}`}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formMontoTotal">
@@ -130,7 +222,9 @@ function FormularioCrearFactura({ searchParams, router, user }) {
                 type="number"
                 step="0.01"
                 value={montoTotal}
-                onChange={(e) => setMontoTotal(e.target.value)}
+                readOnly={true}
+                disabled={true}
+                tabIndex={-1}
                 required
               />
             </Form.Group>
