@@ -12,6 +12,7 @@ import api from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
 import { Form, Button, Alert, Container, Row, Col } from "react-bootstrap";
 import { FiPlus } from "react-icons/fi";
+import { obtenerHuespedes } from "../../../modules/huespedes/services/huespedesService";
 
 // Componente que maneja la lógica del formulario
 function CrearReservaForm() {
@@ -28,13 +29,14 @@ function CrearReservaForm() {
   const [idHuesped, setIdHuesped] = useState("");
   const [idHabitacion, setIdHabitacion] = useState("");
   const [habitacionesDisponibles, setHabitacionesDisponibles] = useState([]);
+  const [huespedes, setHuespedes] = useState([]);
   // Estados para mensajes de error y éxito
   const [error, setError] = useState("");
   const [exito, setExito] = useState("");
   // Estado para controlar el estado de carga del formulario
   const [cargando, setCargando] = useState(false);
 
-  // Efecto para controlar acceso según rol de usuario
+  // Efecto para controlar acceso según rol de usuario y cargar huespedes
   useEffect(() => {
     if (!loading) {
       if (!user || (user.rol !== "admin" && user.rol !== "recepcionista")) {
@@ -49,6 +51,7 @@ function CrearReservaForm() {
       }
       
       cargarHabitaciones();
+      cargarHuespedes();
     }
   }, [loading, user, router, searchParams, fechaInicio, fechaFin]);
 
@@ -65,6 +68,16 @@ function CrearReservaForm() {
       setHabitacionesDisponibles(res.data);
     } catch (err) {
       setError("Error al cargar las habitaciones disponibles");
+    }
+  };
+
+  // Función para cargar huespedes desde el backend
+  const cargarHuespedes = async () => {
+    try {
+      const res = await obtenerHuespedes();
+      setHuespedes(res.data);
+    } catch (err) {
+      setError("Error al cargar los huéspedes");
     }
   };
 
@@ -167,14 +180,20 @@ function CrearReservaForm() {
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formIdHuesped">
-              <Form.Label>ID Huésped</Form.Label>
-              <Form.Control
-                type="text"
+              <Form.Label>Huésped</Form.Label>
+              <Form.Select
                 value={idHuesped}
                 onChange={(e) => setIdHuesped(e.target.value)}
                 required
-                readOnly
-              />
+                disabled={Boolean(searchParams.get("huespedId"))}
+              >
+                <option value="">Seleccione un huésped</option>
+                {huespedes.map((huesped) => (
+                  <option key={huesped.id_huesped} value={huesped.id_huesped}>
+                    {huesped.nombre} {huesped.apellidos}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formIdHabitacion">

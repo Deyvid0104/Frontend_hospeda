@@ -192,7 +192,7 @@ export default function DetalleFactura() {
               value={factura.monto_total !== undefined ? factura.monto_total : ""}
               onChange={manejarCambio}
               required
-              disabled={modo === "ver"}
+              disabled={modo === "ver" || modo === "editar"}
             />
             </Form.Group>
             <Form.Group className="mb-3" controlId="descuento">
