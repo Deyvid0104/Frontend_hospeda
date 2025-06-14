@@ -257,44 +257,46 @@ export default function ListadoReservas() {
                   <td>{mostrarHabitaciones(reserva.detalles_reserva)}</td>
                   <td>{duracion} {duracion === 1 ? 'día' : 'días'}</td>
                   <td>
-                    <CustomButton variant="info" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}`)}>
-                      Ver
-                    </CustomButton>{" "}
-                    {user && (user.rol === "admin" || user.rol === "recepcionista") && (
-                      <>
-                    <CustomButton variant="warning" size="sm" onClick={() => router.push(`/reservas/${reserva.id_reserva}?modo=editar`)}>
-                      Editar
-                    </CustomButton>{" "}
-                    {facturasMap[reserva.id_reserva] ? (
-                      <CustomButton variant="primary" size="sm" onClick={() => {
-                        router.push(`/facturas/${facturasMap[reserva.id_reserva]}`);
-                      }}>
-                        Imprimir
+                    <div className="d-flex gap-2 justify-content-center" style={{ flexWrap: 'nowrap', overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                      <CustomButton variant="info" size="sm" icon="view" className="btn-ver" onClick={() => router.push(`/reservas/${reserva.id_reserva}`)}>
+                        Ver
                       </CustomButton>
-                    ) : (
-                      <CustomButton variant="success" size="sm" onClick={() => {
-                        const fechaSalida = new Date(reserva.fecha_salida).toISOString().split('T')[0];
-                        const fechaEntrada = new Date(reserva.fecha_entrada);
-                        const fechaFin = new Date(reserva.fecha_salida);
-                        const diasEstancia = Math.ceil((fechaFin - fechaEntrada) / (1000 * 60 * 60 * 24));
-                        let monto = 0;
-                        if (reserva.detalles_reserva && reserva.detalles_reserva.length > 0) {
-                          reserva.detalles_reserva.forEach(detalle => {
-                            const precio = detalle.precio_aplicado || 0;
-                            const noches = detalle.noches || diasEstancia;
-                            monto += precio * noches;
-                          });
-                        }
-                        router.push(`/facturas/crear?fecha=${fechaSalida}&id_reserva=${reserva.id_reserva}&monto=${monto}`);
-                      }}>
-                        Facturar
-                      </CustomButton>
-                    )}
-                    <CustomButton variant="danger" size="sm" onClick={() => manejarEliminar(reserva.id_reserva)}>
-                      Eliminar
-                    </CustomButton>
-                      </>
-                    )}
+                      {user && (user.rol === "admin" || user.rol === "recepcionista") && (
+                        <>
+                          <CustomButton variant="warning" size="sm" className="btn-edit" icon="edit" onClick={() => router.push(`/reservas/${reserva.id_reserva}?modo=editar`)}>
+                            Editar
+                          </CustomButton>
+                          {facturasMap[reserva.id_reserva] ? (
+                            <CustomButton variant="primary" size="sm" icon="print" onClick={() => {
+                              router.push(`/facturas/${facturasMap[reserva.id_reserva]}`);
+                            }}>
+                              Imprimir
+                            </CustomButton>
+                          ) : (
+                            <CustomButton variant="success" size="sm" icon="print" onClick={() => {
+                              const fechaSalida = new Date(reserva.fecha_salida).toISOString().split('T')[0];
+                              const fechaEntrada = new Date(reserva.fecha_entrada);
+                              const fechaFin = new Date(reserva.fecha_salida);
+                              const diasEstancia = Math.ceil((fechaFin - fechaEntrada) / (1000 * 60 * 60 * 24));
+                              let monto = 0;
+                              if (reserva.detalles_reserva && reserva.detalles_reserva.length > 0) {
+                                reserva.detalles_reserva.forEach(detalle => {
+                                  const precio = detalle.precio_aplicado || 0;
+                                  const noches = detalle.noches || diasEstancia;
+                                  monto += precio * noches;
+                                });
+                              }
+                              router.push(`/facturas/crear?fecha=${fechaSalida}&id_reserva=${reserva.id_reserva}&monto=${monto}`);
+                            }}>
+                              Facturar
+                            </CustomButton>
+                          )}
+                          <CustomButton variant="danger" size="sm" className="btn-danger" icon="delete" onClick={() => manejarEliminar(reserva.id_reserva)}>
+                            Eliminar
+                          </CustomButton>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

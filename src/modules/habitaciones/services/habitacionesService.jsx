@@ -26,3 +26,19 @@ export const obtenerHabitacionesDisponibles = (fechaInicio, fechaFin) => {
   if (fechaFin) params.append('fechaFin', fechaFin);
   return api.get(`/habitacion/disponibilidad?${params.toString()}`);
 };
+
+
+export const obtenerFechasOcupacionPorHabitacion = () => {
+  return api.get('/habitacion/ocupacion');
+};
+
+// Nueva función para obtener fechas de reserva por id de habitación
+export const obtenerFechasReservaPorHabitacionId = (id) => {
+  return api.get(`/habitacion/${id}/reservas`);
+};
+
+
+// Nueva función para obtener habitaciones con estado 'libre' o 'ocupada'
+export const obtenerHabitacionesLibresYOcupadas = () => {
+  return api.get('/habitacion/libres-y-ocupadas');
+};

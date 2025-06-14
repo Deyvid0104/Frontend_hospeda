@@ -9,6 +9,8 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { obtenerFacturas, eliminarFactura } from "../services/facturasService";
+import { obtenerReservaPorId } from "../../reservas/services/reservasService";
+import { obtenerHuespedPorId } from "../../huespedes/services/huespedesService";
 import Cargando from "../../../components/Cargando";
 import { Table, Alert, Form, Row, Col } from "react-bootstrap";
 import CustomButton from "../../../components/CustomButton";
@@ -19,6 +21,7 @@ export default function ListadoFacturas({ onImprimir }) {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [huespedes, setHuespedes] = useState({});
 
   const [filtroEstado, setFiltroEstado] = useState("");
   const [filtroMetodoPago, setFiltroMetodoPago] = useState("");
@@ -47,6 +50,19 @@ export default function ListadoFacturas({ onImprimir }) {
   useEffect(() => {
     cargarFacturas(filtros);
   }, [filtros]);
+
+const obtenerNombreHuesped = async (idReserva) => {
+    try {
+      const reserva = await obtenerReservaPorId(idReserva);
+      if (reserva && reserva.data && reserva.data.huesped) {
+        return reserva.data.huesped;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error al obtener el nombre del huésped:", error);
+      return null;
+    }
+  };
 
   const manejarEliminar = async (id) => {
     if (!user || (user.rol !== "admin" && user.rol !== "recepcionista")) {
@@ -128,9 +144,10 @@ export default function ListadoFacturas({ onImprimir }) {
           <thead>
             <tr>
               <th>ID</th>
+              <th>Huésped</th>
               <th>Precio</th>
               <th>Descuento</th>
-              <th>Total Descuento</th>
+              <th>Total</th>
               <th>Estado</th>
               <th>Método de pago</th>
               <th>Acciones</th>
@@ -144,6 +161,14 @@ export default function ListadoFacturas({ onImprimir }) {
               return (
                 <tr key={factura.id_factura}>
                   <td>{factura.id_factura}</td>
+                  <td>
+                    {/* Mostrar el nombre del huésped directamente desde la factura */}
+                    {factura.id_reserva ? (
+                      factura.reserva?.huesped?.nombre + " " + factura.reserva?.huesped?.apellidos
+                    ) : (
+                      "Sin reserva"
+                    )}
+                  </td>
                   <td>€{montoTotalNum.toFixed(2)}</td>
                   <td>{descuentoNum.toFixed(2)}%</td>
                   <td>€{precioConDescuento.toFixed(2)}</td>
@@ -197,6 +222,16 @@ export default function ListadoFacturas({ onImprimir }) {
                   </span>
                 </div>
 
+                {/* Agregar el nombre del huésped */}
+                {factura.id_reserva && (
+                  <div className="mb-3">
+                    <small className="text-muted d-block">Huésped</small>
+                    <div className="fw-semibold">
+                      <ObtenerNombreHuesped idReserva={factura.id_reserva} />
+                    </div>
+                  </div>
+                )}
+
                 <div className="row g-2 mb-3">
                   <div className="col-6">
                     <small className="text-muted d-block">Precio</small>
@@ -220,45 +255,21 @@ export default function ListadoFacturas({ onImprimir }) {
                 </div>
 
                   <div className="d-flex flex-wrap gap-2">
-                    <CustomButton 
-                      variant="info" 
-                      size="sm" 
-                      className="flex-fill"
-                      icon="view"
-                      href={`/facturas/${factura.id_factura}`}
-                    >
+                    <CustomButton variant="info" size="sm" className="flex-fill" icon="view" href={`/facturas/${factura.id_factura}`}>
                       Ver
                     </CustomButton>
                     
                     {user && (user.rol === "admin" || user.rol === "recepcionista") && (
                       <>
-                        <CustomButton 
-                          variant="warning" 
-                          size="sm" 
-                          className="flex-fill"
-                          icon="edit"
-                          href={`/facturas/${factura.id_factura}?modo=editar`}
-                        >
+                        <CustomButton variant="warning" size="sm" className="btn-edit" icon="edit" href={`/facturas/${factura.id_factura}?modo=editar`}>
                           Editar
                         </CustomButton>
                         
-                        <CustomButton 
-                          variant="success" 
-                          size="sm" 
-                          className="flex-fill"
-                          icon="print"
-                          onClick={() => onImprimir(factura.id_factura)}
-                        >
+                        <CustomButton variant="success" size="sm" className="flex-fill" icon="print" onClick={() => onImprimir(factura.id_factura)}>
                           Imprimir
                         </CustomButton>
                         
-                        <CustomButton 
-                          variant="danger" 
-                          size="sm" 
-                          className="w-100 mt-2"
-                          icon="delete"
-                          onClick={() => manejarEliminar(factura.id_factura)}
-                        >
+                        <CustomButton variant="danger" size="sm" className="w-100 mt-2" icon="delete" onClick={() => manejarEliminar(factura.id_factura)}>
                           Eliminar
                         </CustomButton>
                       </>
@@ -271,4 +282,28 @@ export default function ListadoFacturas({ onImprimir }) {
       </div>
     </>
   );
+}
+
+// Componente auxiliar para obtener el nombre del huésped
+function ObtenerNombreHuesped({ idReserva }) {
+  const [nombreHuesped, setNombreHuesped] = useState("Cargando...");
+  useEffect(() => {
+    async function cargarNombreHuesped() {
+      try {
+        const reserva = await obtenerReservaPorId(idReserva);
+        if (reserva?.data?.huesped?.nombre && reserva?.data?.huesped?.apellidos) {
+          setNombreHuesped(reserva.data.huesped.nombre + " " + reserva.data.huesped.apellidos);
+        } else {
+          setNombreHuesped("Huésped no encontrado");
+        }
+      } catch (error) {
+        console.error("Error al obtener el nombre del huésped:", error);
+        setNombreHuesped("Error al cargar");
+      }
+    }
+
+    cargarNombreHuesped();
+  }, [idReserva]);
+
+  return <>{nombreHuesped}</>;
 }

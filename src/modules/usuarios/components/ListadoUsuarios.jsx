@@ -92,7 +92,7 @@ export default function ListadoUsuarios() {
                   <CustomButton variant="info" size="sm" icon="view" href={`/usuarios/${usuario.id_usuario}`}>
                     Ver
                   </CustomButton>{" "}
-                  <CustomButton variant="warning" size="sm" icon="edit" href={`/usuarios/${usuario.id_usuario}?modo=editar`}>
+                  <CustomButton variant="warning" size="sm" className="btn-edit" icon="edit" href={`/usuarios/${usuario.id_usuario}?modo=editar`}>
                     Editar
                   </CustomButton>{" "}
                   <CustomButton variant="danger" size="sm" icon="delete" onClick={() => manejarEliminar(usuario.id_usuario)}>

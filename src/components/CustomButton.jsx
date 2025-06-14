@@ -35,13 +35,13 @@ const iconMap = {
  * - children: contenido del botón
  * - ...rest: otros props para Button
  */
-export default function CustomButton({ variant = "primary", icon, children, ...rest }) {
+export default function CustomButton({ variant = "primary", icon, children, className = "", ...rest }) {
   const IconComponent = icon ? iconMap[icon] : null;
 
   return (
     <Button
       variant={variant}
-      className="custom-btn"
+      className={`custom-btn ${className}`}
       {...rest}
     >
       <IconContext.Provider value={{ className: "custom-btn-icon", size: "1.1em" }}>

@@ -32,10 +32,17 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
     setMensaje("");
     setCargando(true);
     try {
-      // Importar función para obtener habitaciones disponibles
-      const { obtenerHabitacionesDisponibles, obtenerHabitaciones } = await import("../services/habitacionesService");
+      // Importar función para obtener habitaciones disponibles y fechas de ocupación
+      const { obtenerHabitacionesDisponibles, obtenerHabitaciones, obtenerFechasOcupacionPorHabitacion } = await import("../services/habitacionesService");
       const resHabitaciones = await obtenerHabitaciones();
       const habitacionesData = resHabitaciones.data;
+
+      // Obtener fechas de ocupación por habitación
+      const resFechasOcupacion = await obtenerFechasOcupacionPorHabitacion();
+      const fechasOcupacionMap = new Map();
+      resFechasOcupacion.data.forEach(item => {
+        fechasOcupacionMap.set(item.id_habitacion, item.fechas_ocupacion);
+      });
 
       // Usar fechas recibidas por props o fecha actual si no hay
       const fechaInicioConsulta = fechaInicio || new Date().toISOString().split('T')[0];
@@ -45,11 +52,12 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
       const resDisponibles = await obtenerHabitacionesDisponibles(fechaInicioConsulta, fechaFinConsulta);
       const habitacionesDisponiblesIds = new Set(resDisponibles.data.map(h => h.id_habitacion));
 
-      // Actualizar estado de cada habitación según disponibilidad
+      // Actualizar estado y fechas de ocupación de cada habitación
       const habitacionesConEstado = habitacionesData.map(hab => {
         return {
           ...hab,
-          estado: habitacionesDisponiblesIds.has(hab.id_habitacion) ? 'libre' : 'ocupada'
+          estado: habitacionesDisponiblesIds.has(hab.id_habitacion) ? 'libre' : 'ocupada',
+          fechas_ocupacion: fechasOcupacionMap.get(hab.id_habitacion) || ''
         };
       });
 
@@ -91,6 +99,14 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
   // Mostrar indicador de carga mientras se obtienen datos
   if (cargando) return <Cargando />;
 
+  // Función para formatear fecha a DD/MM/YYYY
+  function formatDate(dateString) {
+    const fecha = new Date(dateString);
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const anio = fecha.getFullYear();
+    return `${dia}/${mes}/${anio}`;
+  }
 
   // Renderizar tabla con listado de habitaciones y acciones
   return (
@@ -107,40 +123,57 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
               <th>Tipo</th>
               <th>Precio Base</th>
               <th>Estado</th>
+              <th>Fecha Inicio</th>
+              <th>Fecha Fin</th>
               <th>Capacidad</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {habitaciones.map((hab) => (
-              <tr key={hab.id_habitacion}>
-                <td>{hab.id_habitacion}</td>
-                <td>{hab.numero}</td>
-                <td>{hab.tipo}</td>
-                <td>€{hab.precio_base}</td>
-                <td>
-                  <span className={`badge bg-${hab.estado === 'libre' ? 'success' : 'danger'}`}>
-                    {hab.estado}
-                  </span>
-                </td>
-                <td>{hab.capacidad}</td>
-                <td>
-                  <CustomButton variant="info" size="sm" icon="view" href={`/habitaciones/${hab.id_habitacion}`}>
-                    Ver
-                  </CustomButton>{" "}
-                  {user && user.rol === "admin" && (
-                    <>
-                      <CustomButton variant="warning" size="sm" icon="edit" href={`/habitaciones/${hab.id_habitacion}?modo=editar`}>
-                        Editar
-                      </CustomButton>{" "}
-                      <CustomButton variant="danger" size="sm" icon="delete" onClick={() => manejarEliminar(hab.id_habitacion)}>
-                        Eliminar
-                      </CustomButton>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {habitaciones.map((hab) => {
+              let fechaInicio = '';
+              let fechaFin = '';
+              if (hab.estado === 'ocupada' && hab.fechas_ocupacion) {
+                const rangos = hab.fechas_ocupacion.split(',').map(r => r.trim());
+                if (rangos.length > 0) {
+                  const primerRango = rangos[0].split(' a ');
+                  const ultimoRango = rangos[rangos.length - 1].split(' a ');
+                  if (primerRango.length === 2) fechaInicio = formatDate(primerRango[0]);
+                  if (ultimoRango.length === 2) fechaFin = formatDate(ultimoRango[1]);
+                }
+              }
+              return (
+                <tr key={hab.id_habitacion}>
+                  <td>{hab.id_habitacion}</td>
+                  <td>{hab.numero}</td>
+                  <td>{hab.tipo}</td>
+                  <td>€{hab.precio_base}</td>
+                  <td>
+                    <span className={`badge bg-${hab.estado === 'libre' ? 'success' : 'danger'}`}>
+                      {hab.estado}
+                    </span>
+                  </td>
+                  <td>{fechaInicio}</td>
+                  <td>{fechaFin}</td>
+                  <td>{hab.capacidad}</td>
+                  <td>
+                    <CustomButton variant="info" size="sm" icon="view" href={`/habitaciones/${hab.id_habitacion}`}>
+                      Ver
+                    </CustomButton>{" "}
+                    {user && user.rol === "admin" && (
+                      <>
+                        <CustomButton variant="warning" size="sm" className="btn-edit" icon="edit" href={`/habitaciones/${hab.id_habitacion}?modo=editar`}>
+                          Editar
+                        </CustomButton>{" "}
+                        <CustomButton variant="danger" size="sm" icon="delete" onClick={() => manejarEliminar(hab.id_habitacion)}>
+                          Eliminar
+                        </CustomButton>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </Table>
       </div>

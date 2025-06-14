@@ -145,7 +145,7 @@ export default function ListadoHuespedes() {
                 <td>{huesped.email}</td>
                 <td>{huesped.telefono}</td>
                 <td>
-                  <CustomButton variant="info" size="sm" icon="view" href={`/huespedes/${huesped.id_huesped}`}>
+<CustomButton variant="info" size="sm" icon="view" href={`/huespedes/${huesped.id_huesped}`}>
                     Ver
                   </CustomButton>{" "}
                   {(user && (user.rol === "admin" || user.rol === "recepcionista")) && (
