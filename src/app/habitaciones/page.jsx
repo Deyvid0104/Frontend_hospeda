@@ -57,7 +57,7 @@ export default function PaginaHabitaciones() {
         <Row className="align-items-end g-3">
           <Col md={4}>
             <Form.Group controlId="fechaInicio">
-              <Form.Label>Fecha Inicio</Form.Label>
+              <Form.Label>Entrada</Form.Label>
               <Form.Control
                 type="date"
                 value={fechaInicio}
@@ -68,7 +68,7 @@ export default function PaginaHabitaciones() {
           </Col>
           <Col md={4}>
             <Form.Group controlId="fechaFin">
-              <Form.Label>Fecha Fin</Form.Label>
+              <Form.Label>Salida</Form.Label>
               <Form.Control
                 type="date"
                 value={fechaFin}

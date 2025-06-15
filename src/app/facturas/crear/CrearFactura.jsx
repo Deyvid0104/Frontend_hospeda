@@ -7,6 +7,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { Form, Button, Alert, Container, Row, Col, Modal } from "react-bootstrap";
 import { obtenerReservas, obtenerReservaPorId } from "../../../modules/reservas/services/reservasService";
 import { obtenerFacturaPorReserva } from "../../../modules/facturas/services/facturasService";
+import Cargando from "@/components/Cargando";
 
 function FormularioCrearFactura({ searchParams, router, user }) {
   const [fecha, setFecha] = useState("");
@@ -210,7 +211,7 @@ function FormularioCrearFactura({ searchParams, router, user }) {
                 <option value="">Seleccione una reserva</option>
                 {reservas.map((reserva, index) => (
                   <option key={`${reserva.id_reserva}-${index}`} value={reserva.id_reserva}>
-                    {reserva.id_reserva ? reserva.id_reserva.toString() : `Reserva ${index + 1}`}
+                    {reserva.id_reserva && reserva.huesped ? `${reserva.id_reserva} - ${reserva.huesped.nombre} ${reserva.huesped.apellidos}` : `Reserva ${index + 1}`}
                   </option>
                 ))}
               </Form.Select>
@@ -289,7 +290,7 @@ export default function CrearFactura() {
   const { user } = useAuth();
 
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
+    <Suspense fallback={<Cargando />}>
       <FormularioCrearFactura searchParams={searchParams} router={router} user={user} />
     </Suspense>
   );

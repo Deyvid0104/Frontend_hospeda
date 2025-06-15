@@ -89,7 +89,7 @@ const obtenerNombreHuesped = async (idReserva) => {
         <Row>
           <Col md={5}>
             <Form.Group controlId="filtroEstado">
-              <Form.Label>Filtrar por Estado</Form.Label>
+              <Form.Label>Estado</Form.Label>
               <Form.Select
                 value={filtroEstado}
                 onChange={(e) => {
@@ -107,7 +107,7 @@ const obtenerNombreHuesped = async (idReserva) => {
           </Col>
           <Col md={5}>
             <Form.Group controlId="filtroMetodoPago">
-              <Form.Label>Filtrar por Método de Pago</Form.Label>
+              <Form.Label>Método de Pago</Form.Label>
               <Form.Select
                 value={filtroMetodoPago}
                 onChange={(e) => {

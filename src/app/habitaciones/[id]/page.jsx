@@ -13,7 +13,7 @@ import Cargando from "../../../components/Cargando";
 import { useAuth } from "../../../context/AuthContext";
 import { Form, Button, Alert, Container } from "react-bootstrap";
 import Calendar from "react-calendar";
-import 'react-calendar/dist/Calendar.css';
+// import 'react-calendar/dist/Calendar.css';
 import '../../globals.css';
 
 export default function DetalleHabitacion() {
@@ -161,7 +161,7 @@ export default function DetalleHabitacion() {
   if (cargando) return <Cargando />;
   if (!habitacion) return notFound();
 
-  // Function to disable reserved dates on calendar
+  // Función para deshabilitar fechas reservadas en el calendario
   const tileDisabled = ({ date, view }) => {
     if (view === 'month') {
       return fechasReservadas.some(d => isSameDay(d, date));
@@ -169,16 +169,18 @@ export default function DetalleHabitacion() {
     return false;
   };
   
-  // Function to add class to reserved dates on calendar
-  // Reemplazamos tileClassName por tileContent para mostrar indicador visual
+
+  // Función para agregar clase a fechas reservadas en el calendario
   const tileContent = ({ date, view }) => {
     if (view === 'month') {
       const isReserved = fechasReservadas.some(d => isSameDay(d, date));
+      const today = new Date();
+      const isToday = isSameDay(today, date);
       if (isReserved) {
         return (
           <div
             style={{
-              backgroundColor: '#ff4d4d',
+              backgroundColor: '#007bff',
               borderRadius: '50%',
               width: '10px',
               height: '10px',
@@ -189,22 +191,39 @@ export default function DetalleHabitacion() {
           />
         );
       }
+      if (isToday) {
+        return (
+          <div
+            style={{
+              border: '2px solid #28a745',
+              borderRadius: '50%',
+              width: '14px',
+              height: '14px',
+              margin: '0 auto',
+              marginTop: '0px',
+            }}
+            title="Fecha actual"
+          />
+        );
+      }
     }
     return null;
   };
 
   return (
-    <Container className={`${wrapperClass} mt-4`}>
+    <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1>Detalle de Habitación # {habitacion.numero}</h1>
         <div>
-          <Button 
-            variant={modo === "ver" ? "warning" : "info"} 
-            onClick={cambiarModo}
-            className="me-2"
-          >
-            {modo === "ver" ? "Editar" : "Ver"}
-          </Button>
+          {user.rol === "admin" && (
+            <Button 
+              variant={modo === "ver" ? "warning" : "info"} 
+              onClick={cambiarModo}
+              className="me-2"
+            >
+              {modo === "ver" ? "Editar" : "Ver"}
+            </Button>
+          )}
           <Button 
             variant="secondary" 
             onClick={() => router.push("/habitaciones")}

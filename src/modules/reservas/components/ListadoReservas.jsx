@@ -166,7 +166,7 @@ export default function ListadoReservas() {
         <Row>
           <Col md={3}>
             <Form.Group controlId="fechaEntrada">
-              <Form.Label>Fecha Entrada</Form.Label>
+              <Form.Label>Entrada</Form.Label>
               <Form.Control
                 type="date"
                 value={filtros.fecha_entrada}
@@ -176,7 +176,7 @@ export default function ListadoReservas() {
           </Col>
           <Col md={3}>
             <Form.Group controlId="fechaSalida">
-              <Form.Label>Fecha Salida</Form.Label>
+              <Form.Label>Salida</Form.Label>
               <Form.Control
                 type="date"
                 value={filtros.fecha_salida}
@@ -228,8 +228,8 @@ export default function ListadoReservas() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Fecha entrada</th>
-              <th>Fecha salida</th>
+              <th>Entrada</th>
+              <th>Salida</th>
               <th>Estado</th>
               <th>Nombre Huésped</th>
               <th>Habitación</th>
