@@ -3,10 +3,11 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://5.189.171.241:30400",   
-  // baseURL: "http://localhost:4000",
-
-
+  // baseURL: "http://5.189.171.241:30400",   
+  // baseURL: "http://localhost:4000",  
+  // baseURL: "http://5.189.171.241:30400",   
+  baseURL: "https://api.vidavid.es",
+  // baseURL: "http://192.168.1.24:4000",
 });
 
 // Interceptor para añadir el token JWT en las cabeceras de las peticiones
