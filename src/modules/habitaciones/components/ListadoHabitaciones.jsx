@@ -157,7 +157,7 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
                   <td>{fechaFin}</td>
                   <td>{hab.capacidad}</td>
                   <td>
-                    <CustomButton variant="info" size="sm" icon="view" href={`/habitaciones/${hab.id_habitacion}`}>
+                    <CustomButton variant="info" size="sm" icon="view" className="btn-view" href={`/habitaciones/${hab.id_habitacion}`}>
                       Ver
                     </CustomButton>{" "}
                     {user && user.rol === "admin" && (

@@ -145,12 +145,12 @@ export default function ListadoHuespedes() {
                 <td>{huesped.email}</td>
                 <td>{huesped.telefono}</td>
                 <td>
-<CustomButton variant="info" size="sm" icon="view" href={`/huespedes/${huesped.id_huesped}`}>
+                  <CustomButton variant="info" size="sm" icon="view" className="btn-view" href={`/huespedes/${huesped.id_huesped}`}>
                     Ver
                   </CustomButton>{" "}
                   {(user && (user.rol === "admin" || user.rol === "recepcionista")) && (
                     <>
-                      <CustomButton variant="warning" size="sm" icon="edit" href={`/huespedes/${huesped.id_huesped}?modo=editar`}>
+                      <CustomButton variant="warning" size="sm" icon="edit" className="btn-edit" href={`/huespedes/${huesped.id_huesped}?modo=editar`}>
                         Editar
                       </CustomButton>{" "}
                       <CustomButton 
@@ -158,7 +158,7 @@ export default function ListadoHuespedes() {
                         size="sm" 
                         href={`/reservas/crear?huespedId=${huesped.id_huesped}`}
                       >
-                        Crear Reserva
+                        + Crear Reserva
                       </CustomButton>
                     </>
                   )}{" "}

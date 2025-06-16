@@ -10,8 +10,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { obtenerFacturas, eliminarFactura } from "../services/facturasService";
 import { obtenerReservaPorId } from "../../reservas/services/reservasService";
-import { obtenerHuespedPorId } from "../../huespedes/services/huespedesService";
-import Cargando from "../../../components/Cargando";
+import Cargando from "@/components/Cargando";
 import { Table, Alert, Form, Row, Col } from "react-bootstrap";
 import CustomButton from "../../../components/CustomButton";
 
@@ -21,12 +20,13 @@ export default function ListadoFacturas({ onImprimir }) {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
-  const [huespedes, setHuespedes] = useState({});
 
   const [filtroEstado, setFiltroEstado] = useState("");
   const [filtroMetodoPago, setFiltroMetodoPago] = useState("");
+  const [filtroNombre, setFiltroNombre] = useState("");
   const [filtros, setFiltros] = useState({ estado: "", metodo_pago: "" });
 
+  // Nueva función para cargar facturas con huésped
   const cargarFacturas = async (filtros) => {
     setError("");
     setMensaje("");
@@ -37,7 +37,22 @@ export default function ListadoFacturas({ onImprimir }) {
         setError("Error al cargar las facturas: respuesta inválida del servidor");
         setFacturas([]);
       } else {
-        setFacturas(res.data);
+        // Para cada factura, extraer nombre del huésped directamente de reserva
+        let facturasConHuesped = res.data.map((factura) => {
+          const nombreHuesped =
+            factura.reserva && factura.reserva.huesped
+              ? `${factura.reserva.huesped.nombre} ${factura.reserva.huesped.apellidos}`
+              : "-";
+          return { ...factura, nombreHuesped };
+        });
+        // Filtrar por nombre de huésped si filtroNombre no está vacío
+        if (filtroNombre.trim() !== "") {
+          const filtroMinuscula = filtroNombre.toLowerCase();
+          facturasConHuesped = facturasConHuesped.filter((factura) =>
+            factura.nombreHuesped.toLowerCase().includes(filtroMinuscula)
+          );
+        }
+        setFacturas(facturasConHuesped);
       }
     } catch (err) {
       setError("Error al cargar las facturas");
@@ -50,19 +65,6 @@ export default function ListadoFacturas({ onImprimir }) {
   useEffect(() => {
     cargarFacturas(filtros);
   }, [filtros]);
-
-const obtenerNombreHuesped = async (idReserva) => {
-    try {
-      const reserva = await obtenerReservaPorId(idReserva);
-      if (reserva && reserva.data && reserva.data.huesped) {
-        return reserva.data.huesped;
-      }
-      return null;
-    } catch (error) {
-      console.error("Error al obtener el nombre del huésped:", error);
-      return null;
-    }
-  };
 
   const manejarEliminar = async (id) => {
     if (!user || (user.rol !== "admin" && user.rol !== "recepcionista")) {
@@ -80,6 +82,8 @@ const obtenerNombreHuesped = async (idReserva) => {
     }
   };
 
+  if (cargando) return <Cargando />;
+
   return (
     <>
       {error && <Alert variant="danger">{error}</Alert>}
@@ -87,7 +91,26 @@ const obtenerNombreHuesped = async (idReserva) => {
 
       <Form className="mb-3">
         <Row>
-          <Col md={5}>
+          <Col md={4}>
+            <Form.Group controlId="filtroNombre">
+              <Form.Label>Buscar por Huésped</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Nombre del huésped"
+                value={filtroNombre}
+                onChange={(e) => {
+                  setFiltroNombre(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    cargarFacturas(filtros);
+                  }
+                }}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={3}>
             <Form.Group controlId="filtroEstado">
               <Form.Label>Estado</Form.Label>
               <Form.Select
@@ -105,7 +128,7 @@ const obtenerNombreHuesped = async (idReserva) => {
               </Form.Select>
             </Form.Group>
           </Col>
-          <Col md={5}>
+          <Col md={3}>
             <Form.Group controlId="filtroMetodoPago">
               <Form.Label>Método de Pago</Form.Label>
               <Form.Select
@@ -127,6 +150,7 @@ const obtenerNombreHuesped = async (idReserva) => {
             <CustomButton
               variant="secondary"
               onClick={() => {
+                setFiltroNombre("");
                 setFiltroEstado("");
                 setFiltroMetodoPago("");
                 setFiltros({ estado: "", metodo_pago: "" });
@@ -161,14 +185,7 @@ const obtenerNombreHuesped = async (idReserva) => {
               return (
                 <tr key={factura.id_factura}>
                   <td>{factura.id_factura}</td>
-                  <td>
-                    {/* Mostrar el nombre del huésped directamente desde la factura */}
-                    {factura.id_reserva ? (
-                      factura.reserva?.huesped?.nombre + " " + factura.reserva?.huesped?.apellidos
-                    ) : (
-                      "Sin reserva"
-                    )}
-                  </td>
+                  <td>{factura.nombreHuesped}</td>
                   <td>€{montoTotalNum.toFixed(2)}</td>
                   <td>{descuentoNum.toFixed(2)}%</td>
                   <td>€{precioConDescuento.toFixed(2)}</td>
@@ -179,22 +196,18 @@ const obtenerNombreHuesped = async (idReserva) => {
                   </td>
                   <td>{factura.metodo_pago}</td>
                   <td>
-                    <CustomButton variant="info" size="sm" icon="view" href={`/facturas/${factura.id_factura}`}>
+                    <CustomButton variant="info" size="sm" icon="view" className="btn-view" href={`/facturas/${factura.id_factura}`}>
                       Ver
+                    </CustomButton>
+                    <CustomButton variant="warning" size="sm" icon="edit" className="btn-edit" href={`/facturas/${factura.id_factura}?modo=editar`}>
+                      Editar
                     </CustomButton>{" "}
-                    {user && (user.rol === "admin" || user.rol === "recepcionista") && (
-                      <>
-                        <CustomButton variant="warning" size="sm" icon="edit" href={`/facturas/${factura.id_factura}?modo=editar`}>
-                          Editar
-                        </CustomButton>{" "}
-                        <CustomButton variant="success" size="sm" icon="print" onClick={() => onImprimir(factura.id_factura)}>
-                          Imprimir
-                        </CustomButton>{" "}
-                        <CustomButton variant="danger" size="sm" icon="delete" onClick={() => manejarEliminar(factura.id_factura)}>
-                          Eliminar
-                        </CustomButton>
-                      </>
-                    )}
+                    <CustomButton variant="success" size="sm" icon="print" className="btn-success" onClick={() => onImprimir(factura.id_factura)}>
+                      Imprimir
+                    </CustomButton>{" "}
+                    <CustomButton variant="danger" size="sm" icon="delete" className="btn-danger" onClick={() => manejarEliminar(factura.id_factura)}>
+                      Eliminar
+                    </CustomButton>
                   </td>
                 </tr>
               );
@@ -222,15 +235,10 @@ const obtenerNombreHuesped = async (idReserva) => {
                   </span>
                 </div>
 
-                {/* Agregar el nombre del huésped */}
-                {factura.id_reserva && (
-                  <div className="mb-3">
-                    <small className="text-muted d-block">Huésped</small>
-                    <div className="fw-semibold">
-                      <ObtenerNombreHuesped idReserva={factura.id_reserva} />
-                    </div>
-                  </div>
-                )}
+                <div className="mb-3">
+                  <small className="text-muted d-block">Huésped</small>
+                  <div className="fw-semibold">{factura.nombreHuesped}</div>
+                </div>
 
                 <div className="row g-2 mb-3">
                   <div className="col-6">
@@ -258,22 +266,18 @@ const obtenerNombreHuesped = async (idReserva) => {
                     <CustomButton variant="info" size="sm" className="flex-fill" icon="view" href={`/facturas/${factura.id_factura}`}>
                       Ver
                     </CustomButton>
+              
+                    <CustomButton variant="warning" size="sm" className="btn-edit" icon="edit" href={`/facturas/${factura.id_factura}?modo=editar`}>
+                      Editar
+                    </CustomButton>
                     
-                    {user && (user.rol === "admin" || user.rol === "recepcionista") && (
-                      <>
-                        <CustomButton variant="warning" size="sm" className="btn-edit" icon="edit" href={`/facturas/${factura.id_factura}?modo=editar`}>
-                          Editar
-                        </CustomButton>
-                        
-                        <CustomButton variant="success" size="sm" className="flex-fill" icon="print" onClick={() => onImprimir(factura.id_factura)}>
-                          Imprimir
-                        </CustomButton>
-                        
-                        <CustomButton variant="danger" size="sm" className="w-100 mt-2" icon="delete" onClick={() => manejarEliminar(factura.id_factura)}>
-                          Eliminar
-                        </CustomButton>
-                      </>
-                    )}
+                    <CustomButton variant="success" size="sm" className="flex-fill" icon="print" onClick={() => onImprimir(factura.id_factura)}>
+                      Imprimir
+                    </CustomButton>
+                    
+                    <CustomButton variant="danger" size="sm" className="w-100 mt-2" icon="delete" onClick={() => manejarEliminar(factura.id_factura)}>
+                      Eliminar
+                    </CustomButton>                 
                   </div>
               </div>
             </div>
@@ -282,28 +286,4 @@ const obtenerNombreHuesped = async (idReserva) => {
       </div>
     </>
   );
-}
-
-// Componente auxiliar para obtener el nombre del huésped
-function ObtenerNombreHuesped({ idReserva }) {
-  const [nombreHuesped, setNombreHuesped] = useState("Cargando...");
-  useEffect(() => {
-    async function cargarNombreHuesped() {
-      try {
-        const reserva = await obtenerReservaPorId(idReserva);
-        if (reserva?.data?.huesped?.nombre && reserva?.data?.huesped?.apellidos) {
-          setNombreHuesped(reserva.data.huesped.nombre + " " + reserva.data.huesped.apellidos);
-        } else {
-          setNombreHuesped("Huésped no encontrado");
-        }
-      } catch (error) {
-        console.error("Error al obtener el nombre del huésped:", error);
-        setNombreHuesped("Error al cargar");
-      }
-    }
-
-    cargarNombreHuesped();
-  }, [idReserva]);
-
-  return <>{nombreHuesped}</>;
 }

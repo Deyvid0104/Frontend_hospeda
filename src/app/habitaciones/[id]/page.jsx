@@ -9,11 +9,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams, notFound } from "next/navigation";
 import { obtenerHabitacionPorId, actualizarHabitacion, obtenerFechasOcupacionPorHabitacion } from "../../../modules/habitaciones/services/habitacionesService";
-import Cargando from "../../../components/Cargando";
-import { useAuth } from "../../../context/AuthContext";
+import Cargando from "@/components/Cargando";
+import { useAuth } from "@/context/AuthContext";
 import { Form, Button, Alert, Container } from "react-bootstrap";
 import Calendar from "react-calendar";
-// import 'react-calendar/dist/Calendar.css';
+import 'react-calendar/dist/Calendar.css';
 import '../../globals.css';
 
 export default function DetalleHabitacion() {

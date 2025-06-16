@@ -50,7 +50,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-
 /* Control de scroll para HomePage */
 .home-page {
   height: 100vh;
@@ -59,6 +58,82 @@ body {
   main {
     height: calc(100vh - 3.75rem);
     overflow: hidden;
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+  }
+
+  main .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Contenedor del contenido */
+  .content-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0.5rem 0.5rem 0.5rem 0.25rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    z-index: 1;
+  }
+
+  @media (min-width: 992px) {
+    .content-wrapper {
+      justify-content: flex-start;
+      align-items: flex-start;
+      padding: 1rem 1rem 1rem 0.5rem;
+    }
+  }
+
+  /* Contenido sobre el fondo */
+  .home-card {
+    position: relative;
+    background-color: var(--fondo-tarjeta);
+    color: var(--texto-tarjeta);
+    max-width: 800px;
+    width: 90%;
+    backdrop-filter: blur(12px);
+    border-radius: 1rem;
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 2rem 2.5rem;
+    margin-top: -3rem;
+    transition: box-shadow 0.3s ease;
+  }
+
+  .home-card:hover {
+    box-shadow: 0 0.75rem 3rem rgba(0, 0, 0, 0.5);
+  }
+
+  .home-card h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .logo-container {
+    position: relative;
+    width: clamp(10rem, 15vw, 14rem);
+    height: clamp(6rem, 8vw, 9rem);
+    margin: 0 auto 1rem;
+    transition: transform 0.3s ease;
+  }
+
+  .logo-container:hover {
+    transform: scale(1.1);
   }
 }
 
@@ -475,8 +550,8 @@ main {
 }
 
 .table tbody tr:hover .btn-view {
-  color: var(--color-primario);
-  border-color: var(--color-primario);
+  color: #0bb7ec;
+  border-color:  #51d6ff;
 }
 
 .table tbody tr:hover .btn-edit {
@@ -485,8 +560,13 @@ main {
 }
 
 .table tbody tr:hover .btn-success {
-  color: #003d8f;
-  border-color: #003d8f;
+  color: #28a745;
+  border-color: #28a745;
+}
+
+.table tbody tr:hover .btn-primary {
+  color: #2273ff;
+  border-color: #3481fc;
 }
 
 .table tbody tr:hover .btn-danger {
@@ -518,22 +598,22 @@ main {
   border: 0.0625rem solid var(--color-primario);
 }
 
-.btn-view:hover {
+/* .btn-view:hover {
   background-color: white;
   color: var(--color-primario);
-}
+} */
 
 .btn-edit {
   background-color: #ffc107;
   color: #000;
   border: 0.0625rem solid #ffc107;
 }
-
+/* 
 .btn-edit:hover {
   background-color: white;
   color: #ffc107;
   border-color: #ffc107;
-}
+} */
 
 .btn-danger {
   background-color: #dc3545;
@@ -541,11 +621,11 @@ main {
   border: 0.0625rem solid #dc3545;
 }
 
-.btn-danger:hover {
+/* .btn-danger:hover {
   background-color: white;
   color: #dc3545;
   border-color: #dc3545;
-}
+} */
 
 .btn-success {
   background-color: #28a745;
@@ -553,16 +633,44 @@ main {
   border: 0.0625rem solid #28a745;
 }
 
-.btn-success:hover {
+/* .btn-success:hover {
   background-color: white;
   color: #28a745;
   border-color: #28a745;
-}
+} */
 
 /* Mejoras de accesibilidad */
 :focus {
   outline: 0.1875rem solid var(--color-primario);
   outline-offset: 0.125rem;
+}
+
+/* Estilos para botones primarios (Imprimir) */
+.btn-primary {
+  background-color: var(--color-primario);
+  color: white;
+  border: 0.0625rem solid var(--color-primario);
+  transition: all var(--transicion-rapida);
+}
+
+.btn-primary:hover {
+  background-color: white;
+  color: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+/* Estilos para botones info (Ver) */
+.btn-info {
+  background-color: #17a2b8; /* Bootstrap info color */
+  color: white;
+  border: 0.0625rem solid #17a2b8;
+  transition: all var(--transicion-rapida);
+}
+
+.btn-info:hover {
+  background-color: white;
+  color: #17a2b8;
+  border-color: #17a2b8;
 }
 
 /* Animaciones */
@@ -730,161 +838,3 @@ main {
   background-color: var(--color-primario) !important;
 }
 
-
-
-/* calendario */
-.react-calendar {
-  width: 350px;
-  max-width: 100%;
-  background: white;
-  border: 1px solid #a0a096;
-  font-family: 'Arial', 'Helvetica', sans-serif;
-  line-height: 1.125em;
-}
-
-.react-calendar--doubleView {
-  width: 700px;
-}
-
-.react-calendar--doubleView .react-calendar__viewContainer {
-  display: flex;
-  margin: -0.5em;
-}
-
-.react-calendar--doubleView .react-calendar__viewContainer > * {
-  width: 50%;
-  margin: 0.5em;
-}
-
-.react-calendar,
-.react-calendar *,
-.react-calendar *:before,
-.react-calendar *:after {
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-}
-
-.react-calendar button {
-  margin: 0;
-  border: 0;
-  outline: none;
-}
-
-.react-calendar button:enabled:hover {
-  cursor: pointer;
-}
-
-.react-calendar__navigation {
-  display: flex;
-  height: 44px;
-  margin-bottom: 1em;
-}
-
-.react-calendar__navigation button {
-  min-width: 44px;
-  background: none;
-}
-
-.react-calendar__navigation button:disabled {
-  background-color: #f0f0f0;
-}
-
-.react-calendar__navigation button:enabled:hover,
-.react-calendar__navigation button:enabled:focus {
-  background-color: #e6e6e6;
-}
-
-.react-calendar__month-view__weekdays {
-  text-align: center;
-  text-transform: uppercase;
-  font: inherit;
-  font-size: 0.75em;
-  font-weight: bold;
-}
-
-.react-calendar__month-view__weekdays__weekday {
-  padding: 0.5em;
-}
-
-.react-calendar__month-view__weekNumbers .react-calendar__tile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font: inherit;
-  font-size: 0.75em;
-  font-weight: bold;
-}
-
-.react-calendar__month-view__days__day--weekend {
-  color: #d10000;
-}
-
-.react-calendar__month-view__days__day--neighboringMonth,
-.react-calendar__decade-view__years__year--neighboringDecade,
-.react-calendar__century-view__decades__decade--neighboringCentury {
-  color: #757575;
-}
-
-.react-calendar__year-view .react-calendar__tile,
-.react-calendar__decade-view .react-calendar__tile,
-.react-calendar__century-view .react-calendar__tile {
-  padding: 2em 0.5em;
-}
-
-.react-calendar__tile {
-  max-width: 100%;
-  padding: 10px 6.6667px;
-  background: none;
-  text-align: center;
-  font: inherit;
-  font-size: 0.833em;
-}
-
-.react-calendar__tile:disabled {
-  background-color: #f0f0f0;
-  color: #ababab;
-}
-
-.react-calendar__month-view__days__day--neighboringMonth:disabled,
-.react-calendar__decade-view__years__year--neighboringDecade:disabled,
-.react-calendar__century-view__decades__decade--neighboringCentury:disabled {
-  color: #cdcdcd;
-}
-
-.react-calendar__tile:enabled:hover,
-.react-calendar__tile:enabled:focus {
-  background-color: #e6e6e6;
-}
-
-.react-calendar__tile--now {
-  background: #ffff76;
-}
-
-.react-calendar__tile--now:enabled:hover,
-.react-calendar__tile--now:enabled:focus {
-  background: #ffffa9;
-}
-
-.react-calendar__tile--hasActive {
-  background: #76baff;
-}
-
-.react-calendar__tile--hasActive:enabled:hover,
-.react-calendar__tile--hasActive:enabled:focus {
-  background: #a9d4ff;
-}
-
-.react-calendar__tile--active {
-  background: #006edc;
-  color: white;
-}
-
-.react-calendar__tile--active:enabled:hover,
-.react-calendar__tile--active:enabled:focus {
-  background: #1087ff;
-}
-
-.react-calendar--selectRange .react-calendar__tile--hover {
-  background-color: #e6e6e6;
-}

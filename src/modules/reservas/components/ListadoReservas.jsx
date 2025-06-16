@@ -258,7 +258,7 @@ export default function ListadoReservas() {
                   <td>{duracion} {duracion === 1 ? 'día' : 'días'}</td>
                   <td>
                     <div className="d-flex gap-2 justify-content-center" style={{ flexWrap: 'nowrap', overflowX: 'auto', whiteSpace: 'nowrap' }}>
-                      <CustomButton variant="info" size="sm" icon="view" className="btn-ver" onClick={() => router.push(`/reservas/${reserva.id_reserva}`)}>
+                      <CustomButton variant="info" size="sm" icon="view" className="btn-view" onClick={() => router.push(`/reservas/${reserva.id_reserva}`)}>
                         Ver
                       </CustomButton>
                       {user && (user.rol === "admin" || user.rol === "recepcionista") && (
@@ -267,13 +267,13 @@ export default function ListadoReservas() {
                             Editar
                           </CustomButton>
                           {facturasMap[reserva.id_reserva] ? (
-                            <CustomButton variant="primary" size="sm" icon="print" onClick={() => {
+                            <CustomButton variant="primary" size="sm" icon="print" className="btn-primary" onClick={() => {
                               router.push(`/facturas/${facturasMap[reserva.id_reserva]}`);
                             }}>
                               Imprimir
                             </CustomButton>
                           ) : (
-                            <CustomButton variant="success" size="sm" icon="print" onClick={() => {
+                            <CustomButton variant="success" size="sm" icon="print" className="btn-success" onClick={() => {
                               const fechaSalida = new Date(reserva.fecha_salida).toISOString().split('T')[0];
                               const fechaEntrada = new Date(reserva.fecha_entrada);
                               const fechaFin = new Date(reserva.fecha_salida);

@@ -9,8 +9,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import ListadoHabitaciones from "../../modules/habitaciones/components/ListadoHabitaciones";
-import { useAuth } from "../../context/AuthContext";
+import ListadoHabitaciones from "@/modules/habitaciones/components/ListadoHabitaciones";
+import { useAuth } from "@/context/AuthContext";
 import { Button, Form, Row, Col } from "react-bootstrap";
 
 export default function PaginaHabitaciones() {

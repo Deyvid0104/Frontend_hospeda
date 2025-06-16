@@ -9,8 +9,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { obtenerHuespedPorId, actualizarHuesped } from "../../../modules/huespedes/services/huespedesService";
-import Cargando from "../../../components/Cargando";
-import { useAuth } from "../../../context/AuthContext";
+import Cargando from "@/components/Cargando";
+import { useAuth } from "@/context/AuthContext";
 import { Form, Button, Alert, Container } from "react-bootstrap";
 
 export default function DetalleHuesped() {
