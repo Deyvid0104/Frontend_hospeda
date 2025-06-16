@@ -179,32 +179,10 @@ export default function DetalleHabitacion() {
       return (
         <>
           {isReserved && (
-            <div
-              style={{
-                backgroundColor: '#007bff',
-                borderRadius: '50%',
-                width: '10px',
-                height: '10px',
-                margin: '0 auto',
-                marginTop: '2px',
-              }}
-              title="Fecha reservada"
-            />
+            <div className="calendar-reserved-date" title="Fecha reservada" />
           )}
           {isToday && (
-            <div
-              style={{
-                border: '2px solid #28a745',
-                borderRadius: '50%',
-                width: '14px',
-                height: '14px',
-                margin: '0 auto',
-                marginTop: '0px',
-                position: 'relative',
-                zIndex: 10,
-              }}
-              title="Fecha actual"
-            />
+            <div className="calendar-today-date" title="Fecha actual" />
           )}
         </>
       );

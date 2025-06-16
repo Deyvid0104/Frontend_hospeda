@@ -7,11 +7,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { obtenerHabitaciones, eliminarHabitacion } from "../services/habitacionesService";
-import Cargando from "../../../components/Cargando";
+import Cargando from "@/components/Cargando";
 import { Table, Alert } from "react-bootstrap";
-import CustomButton from "../../../components/CustomButton";
+import CustomButton from "@/components/CustomButton";
 
 export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
   // Obtener usuario actual para control de acceso
@@ -119,12 +119,12 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Número</th>
+              <th>Hab.</th>
               <th>Tipo</th>
-              <th>Precio Base</th>
+              <th>Precio</th>
               <th>Estado</th>
-              <th>Fecha Inicio</th>
-              <th>Fecha Fin</th>
+              <th>Entreda</th>
+              <th>Salida</th>
               <th>Capacidad</th>
               <th>Acciones</th>
             </tr>
@@ -147,7 +147,7 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
                   <td>{hab.id_habitacion}</td>
                   <td>{hab.numero}</td>
                   <td>{hab.tipo}</td>
-                  <td>€{hab.precio_base}</td>
+                  <td>{hab.precio_base} €</td>
                   <td>
                     <span className={`badge bg-${hab.estado === 'libre' ? 'success' : 'danger'}`}>
                       {hab.estado}

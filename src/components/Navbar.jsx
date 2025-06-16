@@ -45,17 +45,19 @@ export default function BarraNavegacion() {
               </>
             )}
           </Nav>
-          <Nav onClick={handleClose}>
+          <Nav>
             {user ? (
               <NavDropdown title={user.nombre_usuario || user.email || "Usuario"} id="user-nav-dropdown" align="end">
-                <NavDropdown.Item as={Link} href={`/usuarios/${user.sub}`}>
-                  Modificar cuenta
-                </NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item onClick={logout}>Cerrar sesión</NavDropdown.Item>
+              <NavDropdown.Item as={Link} href={`/usuarios/${user.sub}`} onClick={handleClose}>
+                Modificar cuenta
+              </NavDropdown.Item>
+              <NavDropdown.Divider />
+              <NavDropdown.Item onClick={() => { handleClose(); logout(); }}>
+                Cerrar sesión
+              </NavDropdown.Item>
               </NavDropdown>
             ) : (
-              <Nav.Link as={Link} href="/auth/login">
+              <Nav.Link as={Link} href="/auth/login" onClick={handleClose}>
                 Iniciar sesión
               </Nav.Link>
             )}

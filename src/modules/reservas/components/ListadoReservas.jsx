@@ -228,11 +228,11 @@ export default function ListadoReservas() {
           <thead>
             <tr>
               <th>ID</th>
+              <th>Huésped</th>
+              <th>Habitación</th>
+              <th>Estado</th>
               <th>Entrada</th>
               <th>Salida</th>
-              <th>Estado</th>
-              <th>Nombre Huésped</th>
-              <th>Habitación</th>
               <th>Duración</th>
               <th>Acciones</th>
             </tr>
@@ -246,15 +246,15 @@ export default function ListadoReservas() {
               return (
                 <tr key={reserva.id_reserva}>
                   <td>{reserva.id_reserva}</td>
-                  <td>{fechaEntrada.toLocaleDateString()}</td>
-                  <td>{fechaSalida.toLocaleDateString()}</td>
+                  <td>{reserva.huesped?.nombre ?? ''} {reserva.huesped?.apellidos ?? ''}</td>
+                  <td>{mostrarHabitaciones(reserva.detalles_reserva)}</td>
                   <td>
                     <Badge bg={obtenerColorEstado(reserva.estado)}>
                       {reserva.estado || 'N/A'}
                     </Badge>
-                  </td>
-                  <td>{reserva.huesped?.nombre ?? ''} {reserva.huesped?.apellidos ?? ''}</td>
-                  <td>{mostrarHabitaciones(reserva.detalles_reserva)}</td>
+                  </td>                  
+                  <td>{fechaEntrada.toLocaleDateString()}</td>
+                  <td>{fechaSalida.toLocaleDateString()}</td>                  
                   <td>{duracion} {duracion === 1 ? 'día' : 'días'}</td>
                   <td>
                     <div className="d-flex gap-2 justify-content-center" style={{ flexWrap: 'nowrap', overflowX: 'auto', whiteSpace: 'nowrap' }}>

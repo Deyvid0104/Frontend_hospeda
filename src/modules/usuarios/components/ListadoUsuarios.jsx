@@ -89,7 +89,7 @@ export default function ListadoUsuarios() {
                   </span>
                 </td>
                 <td>
-                  <CustomButton variant="info" size="sm" icon="view" href={`/usuarios/${usuario.id_usuario}`}>
+                  <CustomButton variant="info" size="sm" icon="view" className="btn-view" href={`/usuarios/${usuario.id_usuario}`}>
                     Ver
                   </CustomButton>{" "}
                   <CustomButton variant="warning" size="sm" className="btn-edit" icon="edit" href={`/usuarios/${usuario.id_usuario}?modo=editar`}>
