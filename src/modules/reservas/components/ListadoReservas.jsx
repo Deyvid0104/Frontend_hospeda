@@ -343,7 +343,7 @@ export default function ListadoReservas() {
 
       {/* Vista de tarjetas para móviles */}
       <div className="d-lg-none">
-        {reservas.map((reserva) => {
+        {reservasFiltradas.map((reserva) => {
           const fechaEntrada = new Date(reserva.fecha_entrada);
           const fechaSalida = new Date(reserva.fecha_salida);
           const duracion = Math.ceil((fechaSalida - fechaEntrada) / (1000 * 60 * 60 * 24));
