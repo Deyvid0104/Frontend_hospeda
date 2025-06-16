@@ -180,75 +180,100 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
 
       {/* Vista de tarjetas para móviles */}
       <div className="d-lg-none">
-        {habitaciones.map((hab) => (
-          <div key={hab.id_habitacion} className="card mb-3 shadow-sm">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-start mb-3">
-                <h6 className="card-title mb-0 fw-bold text-primary">
-                  Habitación {hab.numero}
-                </h6>
-                <div className="d-flex align-items-center gap-2">
-                  <span className={`badge bg-${hab.estado === 'libre' ? 'success' : 'danger'}`}>
-                    {hab.estado}
-                  </span>
-                  <small className="text-muted">#{hab.id_habitacion}</small>
+        {habitaciones.map((hab) => {
+          let fechaInicio = '';
+          let fechaFin = '';
+          if (hab.estado === 'ocupada' && hab.fechas_ocupacion) {
+            const rangos = hab.fechas_ocupacion.split(',').map(r => r.trim());
+            if (rangos.length > 0) {
+              const primerRango = rangos[0].split(' a ');
+              const ultimoRango = rangos[rangos.length - 1].split(' a ');
+              if (primerRango.length === 2) fechaInicio = formatDate(primerRango[0]);
+              if (ultimoRango.length === 2) fechaFin = formatDate(ultimoRango[1]);
+            }
+          }
+          return (
+            <div key={hab.id_habitacion} className="card mb-3 shadow-sm">
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <h6 className="card-title mb-0 fw-bold text-primary">
+                    Habitación {hab.numero}
+                  </h6>
+                  <div className="d-flex align-items-center gap-2">
+                    <span className={`badge bg-${hab.estado === 'libre' ? 'success' : 'danger'}`}>
+                      {hab.estado}
+                    </span>
+                    <small className="text-muted">#{hab.id_habitacion}</small>
+                  </div>
                 </div>
-              </div>
 
-              <div className="row g-2 mb-3">
-                <div className="col-6">
-                  <small className="text-muted d-block">Tipo</small>
-                  <div className="fw-semibold">{hab.tipo}</div>
+                <div className="row g-2 mb-3">
+                  <div className="col-6">
+                    <small className="text-muted d-block">Tipo</small>
+                    <div className="fw-semibold">{hab.tipo}</div>
+                  </div>
+                  <div className="col-6">
+                    <small className="text-muted d-block">Capacidad</small>
+                    <div className="fw-semibold">{hab.capacidad} personas</div>
+                  </div>
                 </div>
-                <div className="col-6">
-                  <small className="text-muted d-block">Capacidad</small>
-                  <div className="fw-semibold">{hab.capacidad} personas</div>
+
+                <div className="mb-3">
+                  <small className="text-muted d-block">Precio Base</small>
+                  <div className="fw-bold text-success fs-5">€{hab.precio_base}</div>
                 </div>
-              </div>
 
-              <div className="mb-3">
-                <small className="text-muted d-block">Precio Base</small>
-                <div className="fw-bold text-success fs-5">€{hab.precio_base}</div>
-              </div>
+                {/* Agregado: mostrar fechas inicio y fin en versión móvil */}
+                <div className="row g-2 mb-3">
+                  <div className="col-6">
+                    <small className="text-muted d-block">Fecha Inicio</small>
+                    <div className="fw-semibold">{fechaInicio}</div>
+                  </div>
+                  <div className="col-6">
+                    <small className="text-muted d-block">Fecha Fin</small>
+                    <div className="fw-semibold">{fechaFin}</div>
+                  </div>
+                </div>
 
-              <div className="d-flex flex-wrap gap-2">
-                <CustomButton 
-                  variant="info" 
-                  size="sm" 
-                  className="flex-fill"
-                  icon="view"
-                  href={`/habitaciones/${hab.id_habitacion}`}
-                >
-                  Ver
-                </CustomButton>
-                
-                {user && user.rol === "admin" && (
-                  <>
-                    <CustomButton 
-                      variant="warning" 
-                      size="sm" 
-                      className="flex-fill"
-                      icon="edit"
-                      href={`/habitaciones/${hab.id_habitacion}?modo=editar`}
-                    >
-                      Editar
-                    </CustomButton>
-                    
-                    <CustomButton 
-                      variant="danger" 
-                      size="sm" 
-                      className="w-100 mt-2"
-                      icon="delete"
-                      onClick={() => manejarEliminar(hab.id_habitacion)}
-                    >
-                      Eliminar
-                    </CustomButton>
-                  </>
-                )}
+                <div className="d-flex flex-wrap gap-2">
+                  <CustomButton 
+                    variant="info" 
+                    size="sm" 
+                    className="flex-fill"
+                    icon="view"
+                    href={`/habitaciones/${hab.id_habitacion}`}
+                  >
+                    Ver
+                  </CustomButton>
+                  
+                  {user && user.rol === "admin" && (
+                    <>
+                      <CustomButton 
+                        variant="warning" 
+                        size="sm" 
+                        className="flex-fill"
+                        icon="edit"
+                        href={`/habitaciones/${hab.id_habitacion}?modo=editar`}
+                      >
+                        Editar
+                      </CustomButton>
+                      
+                      <CustomButton 
+                        variant="danger" 
+                        size="sm" 
+                        className="w-100 mt-2"
+                        icon="delete"
+                        onClick={() => manejarEliminar(hab.id_habitacion)}
+                      >
+                        Eliminar
+                      </CustomButton>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </>
   );

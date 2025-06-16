@@ -176,36 +176,38 @@ export default function DetalleHabitacion() {
       const isReserved = fechasReservadas.some(d => isSameDay(d, date));
       const today = new Date();
       const isToday = isSameDay(today, date);
-      if (isReserved) {
-        return (
-          <div
-            style={{
-              backgroundColor: '#007bff',
-              borderRadius: '50%',
-              width: '10px',
-              height: '10px',
-              margin: '0 auto',
-              marginTop: '2px',
-            }}
-            title="Fecha reservada"
-          />
-        );
-      }
-      if (isToday) {
-        return (
-          <div
-            style={{
-              border: '2px solid #28a745',
-              borderRadius: '50%',
-              width: '14px',
-              height: '14px',
-              margin: '0 auto',
-              marginTop: '0px',
-            }}
-            title="Fecha actual"
-          />
-        );
-      }
+      return (
+        <>
+          {isReserved && (
+            <div
+              style={{
+                backgroundColor: '#007bff',
+                borderRadius: '50%',
+                width: '10px',
+                height: '10px',
+                margin: '0 auto',
+                marginTop: '2px',
+              }}
+              title="Fecha reservada"
+            />
+          )}
+          {isToday && (
+            <div
+              style={{
+                border: '2px solid #28a745',
+                borderRadius: '50%',
+                width: '14px',
+                height: '14px',
+                margin: '0 auto',
+                marginTop: '0px',
+                position: 'relative',
+                zIndex: 10,
+              }}
+              title="Fecha actual"
+            />
+          )}
+        </>
+      );
     }
     return null;
   };
@@ -329,10 +331,12 @@ export default function DetalleHabitacion() {
           {modo === "ver" && (
             <>
               <h3>Fechas de Reserva</h3>
-              <Calendar
-                tileContent={tileContent}
-                tileDisabled={tileDisabled}
-              />
+              <div style={{ position: 'relative', zIndex: 1100 }}>
+                <Calendar
+                  tileContent={tileContent}
+                  tileDisabled={tileDisabled}
+                />
+              </div>
             </>
           )}
         </div>
