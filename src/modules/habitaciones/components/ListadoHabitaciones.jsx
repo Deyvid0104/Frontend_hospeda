@@ -13,7 +13,7 @@ import Cargando from "@/components/Cargando";
 import { Table, Alert } from "react-bootstrap";
 import CustomButton from "@/components/CustomButton";
 
-export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
+export default function ListadoHabitaciones({ fechaInicio, fechaFin, filtroNumero = "", filtroTipo = "" }) {
   // Obtener usuario actual para control de acceso
   const { user } = useAuth();
   // Estado para lista de habitaciones
@@ -108,6 +108,13 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
     return `${dia}/${mes}/${anio}`;
   }
 
+  // Filtrar habitaciones según filtroNumero y filtroTipo (case insensitive, parcial)
+  const habitacionesFiltradas = habitaciones.filter(hab => {
+    const numeroMatch = filtroNumero.trim() === "" || hab.numero.toString().toLowerCase().includes(filtroNumero.trim().toLowerCase());
+    const tipoMatch = filtroTipo.trim() === "" || hab.tipo.toLowerCase().includes(filtroTipo.trim().toLowerCase());
+    return numeroMatch && tipoMatch;
+  });
+
   // Renderizar tabla con listado de habitaciones y acciones
   return (
     <>
@@ -130,7 +137,7 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
             </tr>
           </thead>
           <tbody>
-            {habitaciones.map((hab) => {
+            {habitacionesFiltradas.map((hab) => {
               let fechaInicio = '';
               let fechaFin = '';
               if (hab.estado === 'ocupada' && hab.fechas_ocupacion) {
@@ -180,7 +187,7 @@ export default function ListadoHabitaciones({ fechaInicio, fechaFin }) {
 
       {/* Vista de tarjetas para móviles */}
       <div className="d-lg-none">
-        {habitaciones.map((hab) => {
+        {habitacionesFiltradas.map((hab) => {
           let fechaInicio = '';
           let fechaFin = '';
           if (hab.estado === 'ocupada' && hab.fechas_ocupacion) {

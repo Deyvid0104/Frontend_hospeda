@@ -28,6 +28,9 @@ export default function ListadoReservas() {
     fecha_salida: "",
     nombre_huesped: "",
   });
+  
+  const [filtroNumeroHabitacion, setFiltroNumeroHabitacion] = useState("");
+  const [reservasFiltradas, setReservasFiltradas] = useState([]);
 
   // Debounce para el filtro de nombre
   const [nombreBusqueda, setNombreBusqueda] = useState("");
@@ -54,8 +57,6 @@ export default function ListadoReservas() {
     setMensaje("");
     setCargando(true);
     try {
-      // Para evitar recarga en cada tecla, se usa debounce en nombreBusqueda y se pasa a filtros
-      // Pero el input de texto estaba usando filtros.nombre_huesped directamente, lo corregimos
       const resReservas = await obtenerReservas(filtros);
       const reservasData = resReservas.data;
 
@@ -77,6 +78,7 @@ export default function ListadoReservas() {
         setError("No hay reservas para mostrar");
       } else {
         setReservas(reservasOrdenadas);
+        setReservasFiltradas(reservasOrdenadas);
       }
 
       // Obtener facturas asociadas a reservas
@@ -104,6 +106,22 @@ export default function ListadoReservas() {
   React.useEffect(() => {
     cargarDatos();
   }, [filtros]);
+
+  React.useEffect(() => {
+    if (filtroNumeroHabitacion.trim() === "") {
+      setReservasFiltradas(reservas);
+    } else {
+      const filtro = filtroNumeroHabitacion.trim().toLowerCase();
+      const filtradas = reservas.filter(reserva => {
+        if (!reserva.detalles_reserva || reserva.detalles_reserva.length === 0) return false;
+        return reserva.detalles_reserva.some(detalle => {
+          const numero = detalle.habitacion?.numero?.toString() || "";
+          return numero.toLowerCase().includes(filtro);
+        });
+      });
+      setReservasFiltradas(filtradas);
+    }
+  }, [filtroNumeroHabitacion, reservas]);
 
   const manejarEliminar = async (id) => {
     if (!user || (user.rol !== "admin" && user.rol !== "recepcionista")) {
@@ -164,7 +182,7 @@ export default function ListadoReservas() {
         }
       }}>
         <Row>
-          <Col md={3}>
+          <Col md={2}>
             <Form.Group controlId="fechaEntrada">
               <Form.Label>Entrada</Form.Label>
               <Form.Control
@@ -174,13 +192,30 @@ export default function ListadoReservas() {
               />
             </Form.Group>
           </Col>
-          <Col md={3}>
+          <Col md={2}>
             <Form.Group controlId="fechaSalida">
               <Form.Label>Salida</Form.Label>
               <Form.Control
                 type="date"
                 value={filtros.fecha_salida}
                 onChange={(e) => setFiltros({ ...filtros, fecha_salida: e.target.value })}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={2}>
+            <Form.Group controlId="numeroHabitacion">
+              <Form.Label>Nº de Habitación</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Buscar por número"
+                value={filtroNumeroHabitacion}
+                onChange={(e) => setFiltroNumeroHabitacion(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    setFiltros((prev) => ({ ...prev, numero_habitacion: filtroNumeroHabitacion }));
+                  }
+                }}
               />
             </Form.Group>
           </Col>
@@ -208,9 +243,10 @@ export default function ListadoReservas() {
                 </CustomButton>
                 <CustomButton
                   variant="secondary" className="ms-2" onClick={() => {
-                    setNombreBusqueda(""); setFiltros({
-                      fecha_entrada: "", fecha_salida: "", nombre_huesped: "",
+                  setNombreBusqueda(""); setFiltros({
+                      fecha_entrada: "", fecha_salida: "", nombre_huesped: "", numero_habitacion: "",
                     });
+                    setFiltroNumeroHabitacion("");
                   }}
                 >
                   Limpiar
@@ -238,7 +274,7 @@ export default function ListadoReservas() {
             </tr>
           </thead>
           <tbody>
-            {reservas.map((reserva) => {
+            {reservasFiltradas.map((reserva) => {
               const fechaEntrada = new Date(reserva.fecha_entrada);
               const fechaSalida = new Date(reserva.fecha_salida);
               const duracion = Math.ceil((fechaSalida - fechaEntrada) / (1000 * 60 * 60 * 24));

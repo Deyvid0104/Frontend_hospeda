@@ -6,6 +6,7 @@ import api from "../../../services/api";
  * @param {string} filtros.fecha_entrada - Fecha mínima de entrada
  * @param {string} filtros.fecha_salida - Fecha máxima de salida
  * @param {string} filtros.nombre_huesped - Nombre o apellidos del huésped
+ * @param {string} filtros.numero_habitacion - Número de habitación
  * @returns {Promise} Promesa con la respuesta de la API
  */
 export const obtenerReservas = async (filtros = {}) => {
@@ -20,6 +21,9 @@ export const obtenerReservas = async (filtros = {}) => {
     }
     if (filtros.nombre_huesped) {
       params.append('nombre_huesped', filtros.nombre_huesped);
+    }
+    if (filtros.numero_habitacion) {
+      params.append('numero_habitacion', filtros.numero_habitacion);
     }
 
     const response = await api.get(`/reserva?${params.toString()}`);

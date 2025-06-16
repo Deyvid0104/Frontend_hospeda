@@ -4,7 +4,6 @@
  * si el usuario tiene rol de admin.
  */
 
-// "use client" habilita el modo cliente para este componente
 "use client";
 
 import React, { useState } from "react";
@@ -12,6 +11,8 @@ import { useRouter } from "next/navigation";
 import ListadoHabitaciones from "@/modules/habitaciones/components/ListadoHabitaciones";
 import { useAuth } from "@/context/AuthContext";
 import { Button, Form, Row, Col } from "react-bootstrap";
+
+const TIPOS_HABITACION = ["individual", "doble", "triple", "dormitorio"];
 
 export default function PaginaHabitaciones() {
   // Hook para navegación programática
@@ -23,6 +24,10 @@ export default function PaginaHabitaciones() {
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
 
+  // Nuevos estados para filtros de número y tipo de habitación
+  const [filtroNumero, setFiltroNumero] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState("");
+
   // Función para navegar a la página de creación de habitación
   const handleCrearClick = () => {
     router.push("/habitaciones/crear");
@@ -32,6 +37,8 @@ export default function PaginaHabitaciones() {
   const limpiarFiltro = () => {
     setFechaInicio("");
     setFechaFin("");
+    setFiltroNumero("");
+    setFiltroTipo("");
   };
 
   // Asegurar que fechaFin sea igual a fechaInicio si está vacía o es menor
@@ -55,7 +62,7 @@ export default function PaginaHabitaciones() {
       {/* Filtros de fecha para disponibilidad */}
       <Form className="mb-3">
         <Row className="align-items-end g-3">
-          <Col md={4}>
+          <Col md={2}>
             <Form.Group controlId="fechaInicio">
               <Form.Label>Entrada</Form.Label>
               <Form.Control
@@ -66,7 +73,7 @@ export default function PaginaHabitaciones() {
               />
             </Form.Group>
           </Col>
-          <Col md={4}>
+          <Col md={2}>
             <Form.Group controlId="fechaFin">
               <Form.Label>Salida</Form.Label>
               <Form.Control
@@ -77,8 +84,35 @@ export default function PaginaHabitaciones() {
               />
             </Form.Group>
           </Col>
+          <Col md={2}>
+            <Form.Group controlId="filtroNumero">
+              <Form.Label>Nº de Habitación</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Buscar por número"
+                value={filtroNumero}
+                onChange={(e) => setFiltroNumero(e.target.value)}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={2}>
+            <Form.Group controlId="filtroTipo">
+              <Form.Label>Tipo de Habitación</Form.Label>
+              <Form.Select
+                value={filtroTipo}
+                onChange={(e) => setFiltroTipo(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {TIPOS_HABITACION.map((tipo) => (
+                  <option key={tipo} value={tipo}>
+                    {tipo}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
           <Col md="auto" className="d-flex gap-2">
-            <Button variant="primary" onClick={() => cargarHabitaciones()}>
+            <Button variant="primary" onClick={() => {}}>
               Filtrar
             </Button>
             <Button variant="secondary" onClick={limpiarFiltro}>
@@ -89,7 +123,12 @@ export default function PaginaHabitaciones() {
       </Form>
 
       {/* Componente que muestra el listado de habitaciones con filtro de fechas */}
-      <ListadoHabitaciones fechaInicio={fechaInicio} fechaFin={fechaFin} />
+      <ListadoHabitaciones
+        fechaInicio={fechaInicio}
+        fechaFin={fechaFin}
+        filtroNumero={filtroNumero}
+        filtroTipo={filtroTipo}
+      />
     </div>
   );
 }
