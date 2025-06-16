@@ -27,8 +27,8 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <LayoutWrapper>
             <BarraNavegacion />
-            <main className="container" style={{ paddingTop: '3.75rem' }}>{children}</main>
-            {/* <main className="container">{children}</main> */}
+            {/* <main className="container" style={{ paddingTop: '3.75rem' }}>{children}</main> */}
+            <main className="container">{children}</main>
           </LayoutWrapper>
         </AuthProvider>
       </body>
