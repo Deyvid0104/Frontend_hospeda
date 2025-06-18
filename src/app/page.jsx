@@ -31,7 +31,8 @@ export default function HomePage() {
                 </div>
 
                 {/* Título principal */}
-                <h1 className="text-center mb-3 fw-bold">Bienvenido a Hospeda+</h1>
+                {/* <h1 className="text-center mb-3 fw-bold">Bienvenido a Hospeda+</h1> */}
+                <h1 className="text-center mb-3 fw-bold">Proycto Integrado - ASIR</h1>
 
                 {/* Descripción del sistema */}
                 <p className="text-center mb-4 lh-base">

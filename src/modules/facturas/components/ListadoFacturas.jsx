@@ -180,15 +180,37 @@ export default function ListadoFacturas({ onImprimir }) {
           <tbody>
             {facturas.map((factura) => {
               const descuentoNum = parseFloat(factura.descuento) || 0;
-              const montoTotalNum = parseFloat(factura.monto_total) || 0;
-              const precioConDescuento = montoTotalNum - (montoTotalNum * descuentoNum) / 100;
+
+              // Calcular subtotal igual que en ModalFactura.jsx
+              let subtotal = 0;
+              if (factura.reserva && factura.reserva.detalles_reserva && factura.reserva.detalles_reserva.length > 0) {
+                const entrada = new Date(factura.reserva.fecha_entrada);
+                const salida = new Date(factura.reserva.fecha_salida);
+                const diffTime = Math.abs(salida - entrada);
+                const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const precio = parseFloat(factura.reserva.detalles_reserva[0].precio_aplicado || 0);
+                subtotal += dias * precio;
+              }
+              if (factura.detalles_factura && factura.detalles_factura.length > 0) {
+                factura.detalles_factura.forEach(detalle => {
+                  subtotal += detalle.cantidad * detalle.precio_unitario;
+                });
+              }
+
+              // Calcular total aplicando descuento
+              let total = subtotal;
+              if (descuentoNum > 0) {
+                const descuentoMonto = (subtotal * descuentoNum) / 100;
+                total -= descuentoMonto;
+              }
+
               return (
                 <tr key={factura.id_factura}>
                   <td>{factura.id_factura}</td>
                   <td>{factura.nombreHuesped}</td>
-                  <td>€{montoTotalNum.toFixed(2)}</td>
+                  <td>{subtotal.toFixed(2)} €</td>
                   <td>{descuentoNum.toFixed(2)}%</td>
-                  <td>€{precioConDescuento.toFixed(2)}</td>
+                  <td>{total.toFixed(2)} €</td>
                   <td>
                     <span className={`badge bg-${factura.estado === 'pagada' ? 'success' : 'warning'}`}>
                       {factura.estado ?? "pendiente"}
@@ -220,8 +242,29 @@ export default function ListadoFacturas({ onImprimir }) {
       <div className="d-lg-none">
         {facturas.map((factura) => {
           const descuentoNum = parseFloat(factura.descuento) || 0;
-          const montoTotalNum = parseFloat(factura.monto_total) || 0;
-          const precioConDescuento = montoTotalNum - (montoTotalNum * descuentoNum) / 100;
+
+          // Calcular subtotal igual que en ModalFactura.jsx
+          let subtotal = 0;
+          if (factura.reserva && factura.reserva.detalles_reserva && factura.reserva.detalles_reserva.length > 0) {
+            const entrada = new Date(factura.reserva.fecha_entrada);
+            const salida = new Date(factura.reserva.fecha_salida);
+            const diffTime = Math.abs(salida - entrada);
+            const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const precio = parseFloat(factura.reserva.detalles_reserva[0].precio_aplicado || 0);
+            subtotal += dias * precio;
+          }
+          if (factura.detalles_factura && factura.detalles_factura.length > 0) {
+            factura.detalles_factura.forEach(detalle => {
+              subtotal += detalle.cantidad * detalle.precio_unitario;
+            });
+          }
+
+          // Calcular total aplicando descuento
+          let total = subtotal;
+          if (descuentoNum > 0) {
+            const descuentoMonto = (subtotal * descuentoNum) / 100;
+            total -= descuentoMonto;
+          }
           
           return (
             <div key={factura.id_factura} className="card mb-3 shadow-sm">
@@ -243,7 +286,7 @@ export default function ListadoFacturas({ onImprimir }) {
                 <div className="row g-2 mb-3">
                   <div className="col-6">
                     <small className="text-muted d-block">Precio</small>
-                    <div className="fw-semibold">€{montoTotalNum.toFixed(2)}</div>
+                    <div className="fw-semibold">€{subtotal.toFixed(2)}</div>
                   </div>
                   <div className="col-6">
                     <small className="text-muted d-block">Descuento</small>
@@ -254,7 +297,7 @@ export default function ListadoFacturas({ onImprimir }) {
                 <div className="row g-2 mb-3">
                   <div className="col-6">
                     <small className="text-muted d-block">Total con Descuento</small>
-                    <div className="fw-bold text-success">€{precioConDescuento.toFixed(2)}</div>
+                    <div className="fw-bold text-success">€{total.toFixed(2)}</div>
                   </div>
                   <div className="col-6">
                     <small className="text-muted d-block">Método de pago</small>

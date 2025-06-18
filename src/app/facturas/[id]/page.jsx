@@ -179,7 +179,10 @@ export default function DetalleFactura() {
             Modificar Información del Huésped
           </Button>
           <p><strong>Estancia:</strong> {diasEstancia} Días</p>
-          <p><strong>Costo por día de habitación:</strong> {factura?.reserva && factura.reserva.detalles_reserva && factura.reserva.detalles_reserva.length > 0 ? factura.reserva.detalles_reserva[0].precio_aplicado : "-"} €</p>
+          {factura?.reserva && factura.reserva.detalles_reserva && factura.reserva.detalles_reserva.length > 0 && (
+            <p><strong>Habitación Nº:</strong> {factura.reserva.detalles_reserva[0].habitacion ? factura.reserva.detalles_reserva[0].habitacion.numero || factura.reserva.detalles_reserva[0].habitacion.id_habitacion : factura.reserva.detalles_reserva[0].id_habitacion}</p>
+          )}
+          <p><strong>Costo por día:</strong> {factura?.reserva && factura.reserva.detalles_reserva && factura.reserva.detalles_reserva.length > 0 ? factura.reserva.detalles_reserva[0].precio_aplicado : "-"} €</p>
         </Col>
         <Col md={6}>
           <h5>Información de la Factura</h5>
